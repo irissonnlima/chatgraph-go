@@ -1,0 +1,18 @@
+{
+    "user_state": {
+        "customer_id": "556581027703",
+        "menu": "5551997469917",
+        "route": "start.choice",
+        "obs": "{}",
+        "lst_update": "2024-12-19 21:37:26",
+        "direction_in": true,
+        "voll_id": "6a577303-ced2-40ad-a7c8-6c02131efc8d",
+        "platform": "whatsapp_enterprise"
+    },
+    "channel": "whatsapp_enterprise",
+    "customer_phone": "556581027703",
+    "company_phone": "5551997469917",
+    "status": "",
+    "type": "text",
+    "text": "olá"
+}
