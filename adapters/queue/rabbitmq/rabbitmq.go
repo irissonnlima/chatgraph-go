@@ -1,9 +1,12 @@
 package rabbitmq
 
 import (
-	amqp "github.com/rabbitmq/amqp091-go"
+	"chatgraph/adapters/config"
+	"chatgraph/adapters/queue"
 	"log"
 	"time"
+
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type RabbitMQ struct {
@@ -11,16 +14,20 @@ type RabbitMQ struct {
 	password   string
 	host       string
 	vhost      string
+	Queue      string
 	connection *amqp.Connection
 	channel    *amqp.Channel
+
+	queue.IQueue
 }
 
-func NewRabbitMQ(user, password, host, vhost string) *RabbitMQ {
+func NewRabbitMQ(cfg config.Config) *RabbitMQ {
 	rabbit := RabbitMQ{
-		user:     user,
-		password: password,
-		host:     host,
-		vhost:    vhost,
+		Queue:    cfg.RabbitMQQueue,
+		user:     cfg.RabbitMQUser,
+		password: cfg.RabbitMQPassword,
+		host:     cfg.RabbitMQHost,
+		vhost:    cfg.RabbitMQVHost,
 	}
 
 	rabbit.connect()
