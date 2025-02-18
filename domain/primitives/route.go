@@ -17,6 +17,10 @@ func NewRouter(
 	}
 }
 
+func (r *Router) HistoryRoute() string {
+	return strings.Join(r.historyRoute, ".")
+}
+
 func (r *Router) CurrentRoute() string {
 	return r.historyRoute[len(r.historyRoute)-1]
 }

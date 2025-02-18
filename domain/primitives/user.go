@@ -1,6 +1,8 @@
 package domain_primitives
 
-import "strings"
+import (
+	"strings"
+)
 
 func NilString(stringPointer *string) string {
 	if stringPointer == nil {
@@ -22,16 +24,16 @@ func (c ChatID) Stringfy() string {
 
 type UserState struct {
 	ChatID      ChatID
-	Menu        *string
-	Route       *string
+	Route       Router
+	Menu        string
 	Observation *string
 	Protocol    *string
 }
 
 func (u UserState) Stringfy() string {
 	chatIDString := u.ChatID.Stringfy()
-	uStateString := chatIDString + "Menu: " + NilString(u.Menu) + "\n" +
-		"Route: " + NilString(u.Route) + "\n" +
+	uStateString := chatIDString + "Menu: " + u.Menu + "\n" +
+		"Route: " + u.Route.HistoryRoute() + "\n" +
 		"Observation: " + NilString(u.Observation) + "\n" +
 		"Protocol: " + NilString(u.Protocol) + "\n"
 

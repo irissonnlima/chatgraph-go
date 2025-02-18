@@ -2,9 +2,9 @@ package service
 
 import (
 	"chatgraph/adapters/config"
+	grpcclient "chatgraph/adapters/grpc"
 	"chatgraph/adapters/queue/rabbitmq"
 	domain_primitives "chatgraph/domain/primitives"
-	"context"
 )
 
 type RouteHandler struct {
@@ -17,6 +17,8 @@ type ChatbotApp struct {
 	rabbitChan <-chan domain_primitives.UserCall
 
 	routes map[string]RouteHandler
+
+	grpc *grpcclient.Client
 }
 
 func NewChatbotApp() *ChatbotApp {
@@ -28,29 +30,26 @@ func NewChatbotApp() *ChatbotApp {
 		panic("Error getting messages: " + err.Error())
 	}
 
+	client, err := grpcclient.NewClient(config.GrpcURI)
+	if err != nil {
+		panic("Error connecting to grpc: " + err.Error())
+	}
+
 	return &ChatbotApp{
 		config:     config,
 		rabbitChan: rabbitChan,
+		routes:     make(map[string]RouteHandler),
+		grpc:       client,
 	}
 }
 
 func (c *ChatbotApp) Start() {
 	for ucall := range c.rabbitChan {
-		route := ucall.UserState.Route
-		if route == nil {
-			route = new(string)
-			*route = "start"
-			ucall.UserState.Route = route
-		}
+		route := ucall.UserState.Route.CurrentRoute()
 
-		messageCtx := &MessageContext{
-			Context:   context.Background(),
-			Route:     domain_primitives.NewRouter(*route),
-			UserState: ucall.UserState,
-			Message:   ucall.Message,
-		}
+		messageCtx := NewMessageContext(c.grpc, ucall.UserState, ucall.Message)
 
-		routeHandler, ok := c.routes[*route]
+		routeHandler, ok := c.routes[route]
 		if ok {
 			go func(ctx *MessageContext) {
 				err := routeHandler.RouteFunc(ctx)
@@ -59,7 +58,7 @@ func (c *ChatbotApp) Start() {
 				}
 			}(messageCtx)
 		} else {
-			panic("Route not found: " + *route)
+			panic("Route not found: " + route)
 		}
 	}
 }

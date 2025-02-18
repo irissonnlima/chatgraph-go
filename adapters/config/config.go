@@ -8,6 +8,8 @@ import (
 )
 
 type Config struct {
+	GrpcURI string
+
 	RabbitMQUser               string
 	RabbitMQPassword           string
 	RabbitMQHost               string
@@ -25,6 +27,8 @@ func LoadConfig() Config {
 	}
 
 	return Config{
+		GrpcURI: os.Getenv("GRPC_URI"),
+
 		RabbitMQQueue:    os.Getenv("RABBITMQ_QUEUE"),
 		RabbitMQUser:     os.Getenv("RABBITMQ_USER"),
 		RabbitMQPassword: os.Getenv("RABBITMQ_PASSWORD"),

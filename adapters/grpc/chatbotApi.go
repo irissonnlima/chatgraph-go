@@ -3,7 +3,10 @@ package grpcclient
 import (
 	"chatgraph/adapters/grpc/chatbot"
 	domain_primitives "chatgraph/domain/primitives"
+	domain_response "chatgraph/domain/response"
 	"context"
+	"errors"
+	"log"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -40,18 +43,29 @@ func (c *Client) Close() error {
 	return c.conn.Close()
 }
 
-func (c *Client) InsertOrUpdateUserState(ctx context.Context, userState domain_primitives.UserState) (*chatbot.RequestStatus, error) {
+func (c *Client) InsertOrUpdateUserState(ctx context.Context, userState domain_primitives.UserState) error {
 
 	state := &chatbot.UserState{
 		ChatId: &chatbot.ChatID{
 			UserId:    userState.ChatID.UserID,
 			CompanyId: userState.ChatID.CompanyID,
 		},
-		Menu:        domain_primitives.NilString(userState.Menu),
-		Route:       domain_primitives.NilString(userState.Route),
+		Menu:        userState.Menu,
+		Route:       userState.Route.HistoryRoute(),
 		Observation: domain_primitives.NilString(userState.Observation),
 	}
-	return c.UserStateService.InsertUpdateUserState(ctx, state)
+	status, err := c.UserStateService.InsertUpdateUserState(ctx, state)
+	if err != nil {
+		log.Println("Error requesting, inserting or updating user state: ", err)
+		return err
+	}
+
+	if !status.Status {
+		log.Println("Error status inserting or updating user state: ", status.Message)
+		return errors.New(status.Message)
+	}
+
+	return nil
 }
 
 func (c *Client) DeleteUserState(ctx context.Context, chatID *chatbot.ChatID) (*chatbot.RequestStatus, error) {
@@ -66,8 +80,71 @@ func (c *Client) GetAllUserStates(ctx context.Context) (*chatbot.UserStateList, 
 	return c.UserStateService.GetAllUserStates(ctx, &chatbot.Void{})
 }
 
-func (c *Client) SendMessageMsg(ctx context.Context, msg *chatbot.Message) (*chatbot.RequestStatus, error) {
-	return c.SendMessage.SendMessage(ctx, msg)
+func (c *Client) SendMessageMsg(
+	ctx context.Context,
+	chatID domain_primitives.ChatID,
+	message domain_response.ResponseMessage,
+) error {
+
+	buttons := make([]*chatbot.Button, 0, len(message.Buttons))
+	for _, b := range message.Buttons {
+		var typeBtn string
+		switch b.Type {
+		case domain_response.Postback:
+			typeBtn = "postback"
+		case domain_response.URL:
+			typeBtn = "url"
+		default:
+			typeBtn = "postback"
+		}
+
+		buttons = append(buttons, &chatbot.Button{
+			Type:   typeBtn,
+			Title:  b.Title,
+			Detail: b.Detail,
+		})
+	}
+
+	var displayButton *chatbot.Button
+	if len(buttons) > 0 {
+		if message.DiplayButton.Title == "" {
+			message.DiplayButton.Title = "Ver mais"
+		}
+
+		displayButton = &chatbot.Button{
+			Type:   "postback",
+			Title:  message.DiplayButton.Title,
+			Detail: message.DiplayButton.Detail,
+		}
+	}
+
+	msg := &chatbot.Message{
+		ChatId: &chatbot.ChatID{
+			UserId:    chatID.UserID,
+			CompanyId: chatID.CompanyID,
+		},
+		Message: &chatbot.TextMessage{
+			Type:    message.TextMessage.Type,
+			Title:   message.TextMessage.Title,
+			Detail:  message.TextMessage.Detail,
+			Caption: message.TextMessage.Caption,
+		},
+		Buttons:       buttons,
+		DisplayButton: displayButton,
+	}
+
+	result, err := c.SendMessage.SendMessage(ctx, msg)
+	if err != nil {
+		log.Println("Error sending message to user: ", err)
+		return err
+	}
+
+	if !result.Status {
+		log.Println("Error status sending message to user: ", result.Message)
+		return errors.New(result.Message)
+	}
+
+	return nil
 }
 
 func (c *Client) GetAllCampaigns(ctx context.Context) (*chatbot.CampaignsList, error) {
