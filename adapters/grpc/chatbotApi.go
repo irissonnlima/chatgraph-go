@@ -151,13 +151,40 @@ func (c *Client) GetAllCampaigns(ctx context.Context) (*chatbot.CampaignsList, e
 	return c.Transfer.GetAllCampaigns(ctx, &chatbot.Void{})
 }
 
-func (c *Client) GetCampaignID(ctx context.Context, name *chatbot.CampaignName) (*chatbot.CampaignDetails, error) {
-	return c.Transfer.GetCampaignID(ctx, name)
+func (c *Client) GetCampaignID(ctx context.Context, name *chatbot.CampaignName) (string, error) {
+	camp := &chatbot.CampaignName{
+		Name: name.Name,
+	}
+	campResponse, err := c.Transfer.GetCampaignID(ctx, camp)
+	if err != nil {
+		log.Println("Error getting campaign id: ", err)
+		return "", err
+	}
+
+	return campResponse.Id, nil
 }
 
 // TransferToHuman chama o RPC TransferToHuman do serviço Transfer.
-func (c *Client) TransferToHuman(ctx context.Context, req *chatbot.TransferToHumanRequest) (*chatbot.RequestStatus, error) {
-	return c.Transfer.TransferToHuman(ctx, req)
+func (c *Client) TransferToHuman(ctx context.Context, chatID domain_primitives.ChatID, campaignID string, observations string) error {
+	req := &chatbot.TransferToHumanRequest{
+		ChatId: &chatbot.ChatID{
+			UserId:    chatID.UserID,
+			CompanyId: chatID.CompanyID,
+		},
+		CampaignId: campaignID,
+	}
+	status, err := c.Transfer.TransferToHuman(ctx, req)
+	if err != nil {
+		log.Println("Error transferring to human: ", err)
+		return err
+	}
+
+	if !status.Status {
+		log.Println("Error status transferring to human: ", status.Message)
+		return errors.New(status.Message)
+	}
+
+	return nil
 }
 
 // TransferToMenu chama o RPC TransferToMenu do serviço Transfer.
@@ -171,11 +198,42 @@ func (c *Client) GetAllTabulations(ctx context.Context) (*chatbot.TabulationsLis
 }
 
 // GetTabulationID chama o RPC GetTabulationID do serviço EndChat.
-func (c *Client) GetTabulationID(ctx context.Context, name *chatbot.TabulationName) (*chatbot.TabulationDetails, error) {
-	return c.EndChat.GetTabulationID(ctx, name)
+func (c *Client) GetTabulationID(ctx context.Context, tabulationName string) (string, error) {
+	tab := &chatbot.TabulationName{
+		Name: tabulationName,
+	}
+	tabResponse, err := c.EndChat.GetTabulationID(ctx, tab)
+	if err != nil {
+		log.Println("Error getting tabulation id: ", err)
+		return "", err
+	}
+
+	return tabResponse.Id, nil
 }
 
 // EndChat chama o RPC EndChat do serviço EndChat.
-func (c *Client) EndChatService(ctx context.Context, req *chatbot.EndChatRequest) (*chatbot.RequestStatus, error) {
-	return c.EndChat.EndChat(ctx, req)
+func (c *Client) EndChatService(ctx context.Context, chatID domain_primitives.ChatID, tabulationID string, observations string) error {
+
+	log.Println("EndChat Observations: ", observations)
+
+	endChatReq := &chatbot.EndChatRequest{
+		ChatId: &chatbot.ChatID{
+			UserId:    chatID.UserID,
+			CompanyId: chatID.CompanyID,
+		},
+		TabulationId: tabulationID,
+	}
+
+	reqStatus, err := c.EndChat.EndChat(ctx, endChatReq)
+	if err != nil {
+		log.Println("Error ending chat: ", err)
+		return err
+	}
+
+	if !reqStatus.Status {
+		log.Println("Error status ending chat: ", reqStatus.Message)
+		return errors.New(reqStatus.Message)
+	}
+
+	return nil
 }

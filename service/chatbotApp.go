@@ -8,8 +8,8 @@ import (
 )
 
 type RouteHandler struct {
-	RouteFunc   func(*MessageContext) *RouteError
-	OnErrorFunc func(*MessageContext, *RouteError)
+	RouteFunc   func(*MessageContext) (domain_primitives.Router, *RouteError)
+	OnErrorFunc func(*MessageContext, *RouteError) domain_primitives.Router
 }
 
 type ChatbotApp struct {
@@ -43,23 +43,34 @@ func NewChatbotApp() *ChatbotApp {
 	}
 }
 
+func ProcessRoute(ctx *MessageContext, routerMap map[string]RouteHandler, router domain_primitives.Router) {
+	route := router.CurrentRoute()
+	if route == "error" {
+		prevRouter := router.PreviousRoute(router.IsRedirect())
+		route = prevRouter.CurrentRoute()
+	}
+
+	routeHandler, ok := routerMap[route]
+	if ok {
+		route, err := routeHandler.RouteFunc(ctx)
+		if err != nil {
+			ctx.updateRoute(ctx.Route.NextRoute(false, "error"))
+			route = routeHandler.OnErrorFunc(ctx, err)
+		}
+
+		ctx.updateRoute(route)
+		if route.IsRedirect() {
+			ProcessRoute(ctx, routerMap, route)
+		}
+	} else {
+		panic("Route not found: " + route)
+	}
+}
+
 func (c *ChatbotApp) Start() {
 	for ucall := range c.rabbitChan {
-		route := ucall.UserState.Route.CurrentRoute()
-
 		messageCtx := NewMessageContext(c.grpc, ucall.UserState, ucall.Message)
-
-		routeHandler, ok := c.routes[route]
-		if ok {
-			go func(ctx *MessageContext) {
-				err := routeHandler.RouteFunc(ctx)
-				if err != nil {
-					routeHandler.OnErrorFunc(ctx, err)
-				}
-			}(messageCtx)
-		} else {
-			panic("Route not found: " + route)
-		}
+		go ProcessRoute(messageCtx, c.routes, ucall.UserState.Route)
 	}
 }
 

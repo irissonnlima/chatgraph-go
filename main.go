@@ -1,24 +1,52 @@
 package main
 
 import (
+	d "chatgraph/domain/primitives"
 	"chatgraph/service"
 
 	dotenv "github.com/joho/godotenv"
 )
 
-func startRoute(ctx *service.MessageContext) *service.RouteError {
+func startRoute(ctx *service.MessageContext) (d.Router, *service.RouteError) {
+	route := ctx.UserState.Route
+
 	if ctx.Message.ContentMessage == "foo" {
-		return &service.RouteError{
+		return route, &service.RouteError{
 			TypeError: "Meu Tipo de Erro",
 			Message:   "Mensagem de Erro",
 		}
 	}
-	ctx.SendTextMessage("start", "Olá, eu sou um chatbot. Como posso te ajudar?")
-	return nil
+	ctx.SendTextMessage("Olá, eu sou um chatbot. Como posso te ajudar?")
+	return route.NextRoute(false, "start2"), nil
 }
 
-func startRouteError(ctx *service.MessageContext, err *service.RouteError) {
-	ctx.SendTextMessage("start", "Erro: "+err.Message)
+func routeError(ctx *service.MessageContext, err *service.RouteError) d.Router {
+	ctx.SendTextMessage("Erro: " + err.Message)
+
+	return ctx.UserState.Route.PreviousRoute(false)
+}
+
+func start2Route(ctx *service.MessageContext) (d.Router, *service.RouteError) {
+	route := ctx.UserState.Route
+
+	switch ctx.Message.ContentMessage {
+	case "foo":
+		ctx.SendTextMessage("Você digitou foo")
+	case "bar":
+		ctx.SendTextMessage("Você digitou bar")
+	case "exit":
+		ctx.SendTextMessage("encerrando conversa")
+		ctx.EndChat("08fab84f-2ef9-4fcc-a504-c62e1475b938", "Observação de encerramento")
+	case "error":
+		return route.PreviousRoute(false), &service.RouteError{
+			TypeError: "Meu Tipo de Erro",
+			Message:   "Mensagem de Erro",
+		}
+	default:
+		ctx.SendTextMessage("Você digitou algo diferente de foo e bar")
+	}
+
+	return route.NextRoute(true, "start"), nil
 }
 
 func main() {
@@ -29,7 +57,12 @@ func main() {
 
 	app.AddRoute("start", service.RouteHandler{
 		RouteFunc:   startRoute,
-		OnErrorFunc: startRouteError,
+		OnErrorFunc: routeError,
+	})
+
+	app.AddRoute("start2", service.RouteHandler{
+		RouteFunc:   start2Route,
+		OnErrorFunc: routeError,
 	})
 
 	app.Start()

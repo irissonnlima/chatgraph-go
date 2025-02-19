@@ -61,7 +61,7 @@ func (rabbit *RabbitMQ) GetMessages() (<-chan domain_primitives.UserCall, error)
 						CompanyID: messageJson.UserState.ChatID.CompanyID,
 					},
 					Menu:        *messageJson.UserState.Menu,
-					Route:       domain_primitives.NewRouter(*messageJson.UserState.Route),
+					Route:       domain_primitives.NewRouter(false, *messageJson.UserState.Route),
 					Observation: messageJson.UserState.Observation,
 					Protocol:    messageJson.UserState.Protocol,
 				},

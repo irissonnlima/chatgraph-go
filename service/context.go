@@ -43,22 +43,23 @@ func (ctx *MessageContext) updateRoute(nextRoute domain_primitives.Router) {
 	err := ctx.grpcclient.InsertOrUpdateUserState(ctx, updateUstate)
 	if err != nil {
 		log.Println("Error!! updating route: ", err)
+		return
 	}
+
+	ctx.UserState.Route = nextRoute
+	ctx.Route = nextRoute
 }
 
-func (ctx *MessageContext) SendMessage(nextRoute string, message domain_response.ResponseMessage) {
+func (ctx *MessageContext) SendMessage(message domain_response.ResponseMessage) {
 	log.Println("Sending message: ", message)
 
 	err := ctx.grpcclient.SendMessageMsg(ctx, ctx.UserState.ChatID, message)
 	if err != nil {
 		log.Println("Error!! sending message: ", err)
 	}
-
-	adjustedRoute := ctx.Route.NextRoute(nextRoute)
-	ctx.updateRoute(adjustedRoute)
 }
 
-func (ctx *MessageContext) SendTextMessage(nextRoute string, message string) {
+func (ctx *MessageContext) SendTextMessage(message string) {
 	log.Println("Sending TextMessage: ", message)
 
 	err := ctx.grpcclient.SendMessageMsg(
@@ -78,14 +79,15 @@ func (ctx *MessageContext) SendTextMessage(nextRoute string, message string) {
 	if err != nil {
 		log.Println("Error!! sending message: ", err)
 	}
-
-	adjustedRoute := ctx.Route.NextRoute(nextRoute)
-	ctx.updateRoute(adjustedRoute)
 }
 
 func (ctx *MessageContext) EndChat(tabulationID string, observation string) {
 	log.Println("Ending chat", tabulationID, " obs: ", observation)
 
+	err := ctx.grpcclient.EndChatService(ctx, ctx.UserState.ChatID, tabulationID, observation)
+	if err != nil {
+		log.Println("Error!! ending chat: ", err)
+	}
 }
 
 func (ctx *MessageContext) TransferToHuman(campaignID string, observation string) {

@@ -3,18 +3,25 @@ package domain_primitives
 import "strings"
 
 type Router struct {
+	redirect     bool
 	historyRoute []string
 }
 
 func NewRouter(
+	redirect bool,
 	userRoute string,
 ) Router {
 
 	routes := strings.Split(userRoute, ".")
 
 	return Router{
+		redirect:     redirect,
 		historyRoute: routes,
 	}
+}
+
+func (r *Router) IsRedirect() bool {
+	return r.redirect
 }
 
 func (r *Router) HistoryRoute() string {
@@ -25,14 +32,23 @@ func (r *Router) CurrentRoute() string {
 	return r.historyRoute[len(r.historyRoute)-1]
 }
 
-func (r *Router) PreviousRoute() Router {
+func (r *Router) PreviousRoute(redirect bool) Router {
+	var prevRoute string
+	if len(r.historyRoute) > 1 {
+		prevRoute = r.historyRoute[len(r.historyRoute)-2]
+	} else {
+		prevRoute = r.historyRoute[0]
+	}
+
 	return Router{
-		historyRoute: r.historyRoute[:len(r.historyRoute)-1],
+		redirect:     redirect,
+		historyRoute: append(r.historyRoute, prevRoute),
 	}
 }
 
-func (r *Router) NextRoute(route string) Router {
+func (r *Router) NextRoute(redirect bool, route string) Router {
 	return Router{
+		redirect:     redirect,
 		historyRoute: append(r.historyRoute, route),
 	}
 }
