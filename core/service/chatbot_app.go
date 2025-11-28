@@ -231,6 +231,9 @@ func (app *ChatbotApp[Obs]) handleNextRoute(userState d_user.UserState[Obs], nex
 	return app.routerActions.SetRoute(userState.ChatID, next.Current())
 }
 
+// handleRedirect processes a RedirectResponse result.
+// It immediately sets the new route and recursively calls HandleMessage
+// to execute the target route handler without waiting for user input.
 func (app *ChatbotApp[Obs]) handleRedirect(userState d_user.UserState[Obs], message d_message.Message, redirect d_action.RedirectResponse) error {
 	err := app.routerActions.SetRoute(userState.ChatID, redirect.TargetRoute)
 	if err != nil {
@@ -244,6 +247,8 @@ func (app *ChatbotApp[Obs]) handleRedirect(userState d_user.UserState[Obs], mess
 	return app.HandleMessage(newUserState, message)
 }
 
+// handleTransferToMenu processes a TransferToMenu result.
+// It delegates to the router service to transfer the user to a different menu.
 func (app *ChatbotApp[Obs]) handleTransferToMenu(userState d_user.UserState[Obs], message d_message.Message, transfer d_action.TransferToMenu) error {
 	return app.routerActions.TransferToMenu(userState.ChatID, transfer, message)
 }

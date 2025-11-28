@@ -87,6 +87,8 @@ type Button struct {
 	Detail string
 }
 
+// String returns a formatted text representation of the button.
+// URL buttons display as "*Title*: URL" and POSTBACK buttons as "*Title*" or "_Detail_".
 func (b Button) String() string {
 	if b.Type == URL {
 		return "\n*" + b.Title + "*: " + b.Detail
@@ -117,6 +119,8 @@ type Message struct {
 	File d_file.File
 }
 
+// EntireText returns the complete text content of the message.
+// It concatenates Title, Detail, button text representations, and Caption.
 func (m Message) EntireText() string {
 	buttons := m.TextButtons()
 

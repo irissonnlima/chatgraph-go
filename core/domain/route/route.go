@@ -1,3 +1,6 @@
+// Package d_route provides the Route domain model for chatbot navigation.
+// It tracks the user's path through the chatbot's routes and provides
+// methods for navigation history manipulation.
 package d_route
 
 import "strings"

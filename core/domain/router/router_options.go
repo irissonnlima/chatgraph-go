@@ -27,14 +27,25 @@ type ProtectedRouteOps struct {
 	Route string
 }
 
+// TimeoutRouteOps configures timeout behavior for route handler execution.
+// When a handler exceeds the specified duration, the user is redirected
+// to the specified route and the handler execution is cancelled.
 type TimeoutRouteOps struct {
 	// Duration specifies the maximum duration allowed for the handler execution.
+	// If the handler does not complete within this time, it will be cancelled.
 	Duration time.Duration
-	Route    string
+	// Route is the route name to redirect to when a timeout occurs.
+	Route string
 }
 
+// LoopCountRouteOps configures loop protection for route handler execution.
+// This prevents infinite redirect loops by limiting the number of consecutive
+// route executions and redirecting to a fallback route when exceeded.
 type LoopCountRouteOps struct {
+	// Count is the maximum number of consecutive route executions allowed.
+	// When this limit is exceeded, the user is redirected to the fallback Route.
 	Count int
+	// Route is the route name to redirect to when the loop limit is exceeded.
 	Route string
 }
 
@@ -42,6 +53,8 @@ type LoopCountRouteOps struct {
 // It provides settings for error tracking, execution time limits, and route protection
 // to ensure robust and controlled request processing.
 type RouterHandlerOptions struct {
+	// LoopCount configures loop protection to prevent infinite redirect loops.
+	// If nil, DEFAULT_LOOP_COUNT is used.
 	LoopCount *LoopCountRouteOps
 
 	// Timeout specifies the maximum duration allowed for the handler execution.
@@ -52,9 +65,14 @@ type RouterHandlerOptions struct {
 	// When enabled, unauthorized users will be redirected to the specified route.
 	Protected *ProtectedRouteOps
 
+	// Triggers is a list of regex-based triggers that can automatically redirect
+	// the conversation to a different route based on message content.
 	Triggers []RouteTrigger
 }
 
+// SetOps merges the options from another RouterHandlerOptions into this one.
+// Non-nil values in the other options will override the corresponding values in this instance.
+// This allows for selective option overriding while preserving defaults.
 func (o *RouterHandlerOptions) SetOps(other RouterHandlerOptions) {
 
 	if other.LoopCount != nil {
