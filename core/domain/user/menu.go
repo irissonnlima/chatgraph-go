@@ -5,14 +5,8 @@ package d_user
 type Menu struct {
 	// ID is the unique identifier for the menu.
 	ID int
-	// DepartmentID is the department this menu belongs to.
-	DepartmentID int
 	// Name is the display name of the menu.
 	Name string
-	// Description provides additional details about the menu.
-	Description string
-	// Active indicates whether the menu is currently available.
-	Active bool
 }
 
 // IsEmpty returns true if the Menu has an invalid ID (less than 1).

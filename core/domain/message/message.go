@@ -6,7 +6,6 @@ import (
 	d_file "chatgraph/core/domain/file"
 	"fmt"
 	"strings"
-	"time"
 )
 
 // ButtonType represents the type of button in a message.
@@ -37,30 +36,20 @@ func ButtonTypeFromString(s string) (ButtonType, error) {
 	}
 }
 
-// Maximum lengths for button fields.
-const (
-	// MAX_BUTTON_TITLE is the maximum length for a button title.
-	MAX_BUTTON_TITLE = 20
-	// MAX_BUTTON_DETAIL is the maximum length for a button detail.
-	MAX_BUTTON_DETAIL = 30
-)
-
 // Button type constants.
 const (
 	// POSTBACK represents a button that sends a postback to the server.
 	POSTBACK ButtonType = iota
 	// URL represents a button that opens a URL.
 	URL
+	// UNKNOWN represents an unknown button type.
+	UNKNOWN
 )
 
 // Error variables for button validation.
 var (
 	// ErrorButtonTypeInvalid is returned when the button type is not POSTBACK or URL.
 	ErrorButtonTypeInvalid = fmt.Errorf("button type is invalid, must be either POSTBACK or URL")
-	// ErrorButtonTitleTooLong is returned when the button title exceeds MAX_BUTTON_TITLE.
-	ErrorButtonTitleTooLong = fmt.Errorf("button title is too long, maximum is %d characters", MAX_BUTTON_TITLE)
-	// ErrorButtonDetailTooLong is returned when the button detail exceeds MAX_BUTTON_DETAIL.
-	ErrorButtonDetailTooLong = fmt.Errorf("button detail is too long, maximum is %d characters", MAX_BUTTON_DETAIL)
 )
 
 // TextMessage represents the text content of a message.
@@ -114,7 +103,7 @@ type Message struct {
 	// DisplayButton is the primary action button displayed prominently.
 	DisplayButton Button
 	// DateTime is the timestamp when the message was sent or received.
-	DateTime time.Time
+	DateTime string
 	// File is an optional file attachment.
 	File d_file.File
 }
@@ -151,12 +140,6 @@ func (m Message) ValidadeButtons() error {
 	for _, button := range m.Buttons {
 		if button.Type != POSTBACK && button.Type != URL {
 			return ErrorButtonTypeInvalid
-		}
-		if len(button.Title) > MAX_BUTTON_TITLE {
-			return ErrorButtonTitleTooLong
-		}
-		if len(button.Detail) > MAX_BUTTON_DETAIL {
-			return ErrorButtonDetailTooLong
 		}
 	}
 	return nil

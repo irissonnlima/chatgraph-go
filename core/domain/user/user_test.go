@@ -93,7 +93,7 @@ func TestMenu_IsEmpty(t *testing.T) {
 		},
 		{
 			name:     "ID greater than 1",
-			menu:     Menu{ID: 100, DepartmentID: 5, Name: "Settings", Active: true},
+			menu:     Menu{ID: 100, Name: "Settings"},
 			expected: false,
 		},
 	}
@@ -208,16 +208,13 @@ func TestUserState_IsEmpty(t *testing.T) {
 					Email: "john@example.com",
 				},
 				Menu: Menu{
-					ID:           1,
-					DepartmentID: 10,
-					Name:         "Main Menu",
-					Active:       true,
+					ID:   1,
+					Name: "Main Menu",
 				},
 				Route:       d_route.NewRoute("start.menu", '.'),
 				DirectionIn: true,
 				Observation: TestObservation{OrderID: "ORD-123", ProductID: 456, Active: true},
 				Platform:    "whatsapp",
-				LastUpdate:  "2025-11-27T10:00:00Z",
 				DtCreated:   "2025-11-27T09:00:00Z",
 			},
 			expected: false,
