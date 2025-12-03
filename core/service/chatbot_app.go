@@ -35,10 +35,18 @@ type ChatbotApp[Obs any] struct {
 	routeTriggers []d_router.RouteTrigger
 }
 
-// NewChatbotApp creates a new ChatbotApp instance with the provided adapters.
-// The queueAdapter is used to consume incoming messages from the message broker.
-// The routerActions provides messaging and session management capabilities.
-// Optional defaultOptions can be provided to set default handler options.
+/*
+NewChatbotApp creates a new ChatbotApp instance with the provided adapters.
+The queueAdapter is used to consume incoming messages from the message broker.
+The routerActions provides messaging and session management capabilities.
+
+Optional defaultOptions can be provided to set default handler options.
+
+If not provided, the following defaults are used:
+  - Timeout: 5 minutes (redirects to "timeout_route")
+  - Loop Limit: 3 iterations (redirects to "loop_route")
+  - Protected: nil (no protection by default)
+*/
 func NewChatbotApp[Obs any](
 	queueAdapter adapter_input.IMessageReceiver[Obs],
 	routerActions adapter_output.RouterService,
@@ -133,11 +141,11 @@ func (app *ChatbotApp[Obs]) HandleMessage(userState d_user.UserState[Obs], messa
 	}
 
 	loopLimit := app.defaultOptions.LoopCount.Count
-
-	if route.CurrentRepeated() > loopLimit {
+	repeated := route.CurrentRepeated()
+	if repeated > loopLimit && route.Current() != app.defaultOptions.LoopCount.Route {
 		log.Printf("[ERROR] Loop detected for route: %s", route.Current())
 		redirect := d_action.RedirectResponse{
-			TargetRoute: app.defaultOptions.Timeout.Route,
+			TargetRoute: app.defaultOptions.LoopCount.Route,
 		}
 		return app.handleRedirect(userState, message, redirect)
 	}
@@ -168,6 +176,9 @@ func (app *ChatbotApp[Obs]) HandleMessage(userState d_user.UserState[Obs], messa
 	select {
 	case result := <-resultChan:
 		if result == nil {
+			// If handler returns nil, stay on the same route
+			nextRoute := userState.Route.Next(userState.Route.Current())
+			app.handleResult(userState, message, nextRoute)
 			return nil
 		}
 		app.handleResult(userState, message, result)
@@ -196,8 +207,20 @@ func (app *ChatbotApp[Obs]) handleResult(userState d_user.UserState[Obs], messag
 			log.Printf("[ERROR] failed to end session: %v", err)
 		}
 		return
+	case *d_action.EndAction:
+		err := app.handleEndAction(userState, *r)
+		if err != nil {
+			log.Printf("[ERROR] failed to end session: %v", err)
+		}
+		return
 	case d_route.Route:
 		err := app.handleNextRoute(userState, r)
+		if err != nil {
+			log.Printf("[ERROR] failed to handle next route: %v", err)
+		}
+		return
+	case *d_route.Route:
+		err := app.handleNextRoute(userState, *r)
 		if err != nil {
 			log.Printf("[ERROR] failed to handle next route: %v", err)
 		}
@@ -205,8 +228,17 @@ func (app *ChatbotApp[Obs]) handleResult(userState d_user.UserState[Obs], messag
 	case d_action.TransferToMenu:
 		app.handleTransferToMenu(userState, message, r)
 		return
+	case *d_action.TransferToMenu:
+		app.handleTransferToMenu(userState, message, *r)
+		return
 	case d_action.RedirectResponse:
 		err := app.handleRedirect(userState, message, r)
+		if err != nil {
+			log.Printf("[ERROR] failed to handle redirect: %v", err)
+		}
+		return
+	case *d_action.RedirectResponse:
+		err := app.handleRedirect(userState, message, *r)
 		if err != nil {
 			log.Printf("[ERROR] failed to handle redirect: %v", err)
 		}
