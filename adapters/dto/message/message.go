@@ -57,15 +57,15 @@ func (b Button) ToDomain() d_message.Button {
 // Message represents a complete chat message with optional buttons and file attachments.
 type Message struct {
 	// TextMessage contains the text content of the message.
-	TextMessage TextMessage `json:"text_message"`
+	TextMessage *TextMessage `json:"text_message"`
 	// Buttons is a list of interactive buttons attached to the message.
 	Buttons []Button `json:"buttons"`
 	// DisplayButton is the primary action button displayed prominently.
-	DisplayButton Button `json:"display_button"`
+	DisplayButton *Button `json:"display_button"`
 	// DateTime is the timestamp when the message was sent or received.
 	DateTime string `json:"date_time"`
 	// File is an optional file attachment.
-	File dto_file.File `json:"file"`
+	File *dto_file.File `json:"file"`
 }
 
 func (m Message) ToDomain() d_message.Message {
