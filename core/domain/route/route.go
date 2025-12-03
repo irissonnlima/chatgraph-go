@@ -29,7 +29,7 @@ func NewRoute(fullPath string, separator rune) Route {
 	return Route{History: segments, Separator: separator}
 }
 
-func (r Route) IsRouteReturn() {}
+func (Route) IsRouteReturn() {}
 
 // CurrentRepeated returns how many times the current route appears consecutively
 // at the end of the history.
@@ -42,10 +42,10 @@ func (r Route) CurrentRepeated() int {
 	count := 0
 	current := r.Current()
 	for i := len(r.History) - 1; i >= 0; i-- {
-		count++
 		if r.History[i] != current {
 			return count
 		}
+		count++
 	}
 	return count
 }

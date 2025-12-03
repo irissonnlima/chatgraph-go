@@ -94,6 +94,10 @@ func (b Button) String() string {
 	return ""
 }
 
+func (b Button) IsEmpty() bool {
+	return b.Title == "" || b.Type == UNKNOWN
+}
+
 // Message represents a complete chat message with optional buttons and file attachments.
 type Message struct {
 	// TextMessage contains the text content of the message.

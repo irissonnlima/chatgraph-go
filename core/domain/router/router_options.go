@@ -88,3 +88,19 @@ func (o *RouterHandlerOptions) SetOps(other RouterHandlerOptions) {
 		o.Triggers = other.Triggers
 	}
 }
+
+func (o *RouterHandlerOptions) GetRhoRoutes() []string {
+	rhoRoutes := []string{}
+
+	if o.Timeout != nil {
+		rhoRoutes = append(rhoRoutes, o.Timeout.Route)
+	}
+	if o.LoopCount != nil {
+		rhoRoutes = append(rhoRoutes, o.LoopCount.Route)
+	}
+	if o.Protected != nil {
+		rhoRoutes = append(rhoRoutes, o.Protected.Route)
+	}
+
+	return rhoRoutes
+}
