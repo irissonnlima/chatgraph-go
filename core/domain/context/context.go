@@ -47,9 +47,3 @@ func NewChatContext[Obs any](
 
 	return ctxChatbot, cancel
 }
-
-// SendMessage sends a message to the specified chat ID.
-// Returns an error if the message could not be sent.
-func (c *ChatContext[Obs]) SendMessage(to d_user.ChatID, message d_message.Message) error {
-	return c.router.SendMessage(to, message)
-}
