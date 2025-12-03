@@ -13,7 +13,7 @@ import (
 type RouterService interface {
 	// SendMessage sends a message to the specified chat ID.
 	// Returns an error if the message could not be delivered.
-	SendMessage(to d_user.ChatID, message d_message.Message) error
+	SendMessage(to d_user.ChatID, message d_message.Message, platform string) error
 
 	// SetObservation updates the observation data for the specified chat.
 	// The observation is stored as a JSON string.
