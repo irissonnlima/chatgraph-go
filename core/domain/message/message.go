@@ -117,15 +117,21 @@ type Message struct {
 func (m Message) EntireText() string {
 	buttons := m.TextButtons()
 
-	return strings.Join(
-		[]string{
-			m.TextMessage.Title,
-			m.TextMessage.Detail,
-			buttons,
-			m.TextMessage.Caption,
-		},
-		"\n",
-	)
+	parts := []string{}
+	if m.TextMessage.Title != "" {
+		parts = append(parts, m.TextMessage.Title)
+	}
+	if m.TextMessage.Detail != "" {
+		parts = append(parts, m.TextMessage.Detail)
+	}
+	if buttons != "" {
+		parts = append(parts, buttons)
+	}
+	if m.TextMessage.Caption != "" {
+		parts = append(parts, m.TextMessage.Caption)
+	}
+
+	return strings.Join(parts, "\n")
 }
 
 // HasButtons returns true if the message contains any buttons.
