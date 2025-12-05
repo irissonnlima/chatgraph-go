@@ -9,6 +9,10 @@ func (c *ChatContext[Obs]) GetObservation() Obs {
 }
 
 func (c *ChatContext[Obs]) SetObservation(observation Obs) error {
+	if c.Context.Err() != nil {
+		return c.Context.Err()
+	}
+
 	obsString, err := json.Marshal(observation)
 	if err != nil {
 		return err
