@@ -77,7 +77,7 @@ Chatgraph follows a **hexagonal architecture** pattern, separating core domain l
 │                        Application                              │
 ├─────────────────────────────────────────────────────────────────┤
 │  ┌─────────────┐    ┌─────────────┐    ┌─────────────────────┐  │
-│  │  RabbitMQ   │───▶│  ChatbotApp │───▶│    Router API      │  │
+│  │  RabbitMQ   │──▶│  ChatbotApp │───▶│    Router API       │  │
 │  │  (Input)    │    │  (Service)  │    │    (Output)         │  │
 │  └─────────────┘    └──────┬──────┘    └─────────────────────┘  │
 │                            │                                    │
