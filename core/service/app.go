@@ -9,7 +9,6 @@ import (
 	d_action "github.com/irissonnlima/chatgraph-go/core/domain/action"
 	d_message "github.com/irissonnlima/chatgraph-go/core/domain/message"
 	d_route "github.com/irissonnlima/chatgraph-go/core/domain/route"
-	d_router "github.com/irissonnlima/chatgraph-go/core/domain/router"
 	d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
 	adapter_input "github.com/irissonnlima/chatgraph-go/core/ports/adapters/input"
 	adapter_output "github.com/irissonnlima/chatgraph-go/core/ports/adapters/output"
@@ -23,8 +22,8 @@ type ChatbotApp[Obs any] struct {
 	engine *Engine[Obs]
 	// messageReceiver handles message queue consumption.
 	messageReceiver adapter_input.IMessageReceiver[Obs]
-	// routerActions provides messaging and session management capabilities.
-	routerActions adapter_output.IBotExecutor
+	// botExecutor provides messaging and session management capabilities.
+	botExecutor adapter_output.IBotExecutor
 }
 
 /*
@@ -40,36 +39,15 @@ If not provided, the following defaults are used:
   - Protected: nil (no protection by default)
 */
 func NewChatbotApp[Obs any](
-	queueAdapter adapter_input.IMessageReceiver[Obs],
-	routerActions adapter_output.IBotExecutor,
-	defaultOptions ...d_router.RouterHandlerOptions,
+	engine *Engine[Obs],
+	messageReceiver adapter_input.IMessageReceiver[Obs],
+	botExecutor adapter_output.IBotExecutor,
 ) *ChatbotApp[Obs] {
 	return &ChatbotApp[Obs]{
-		engine:          NewEngine[Obs](defaultOptions...),
-		messageReceiver: queueAdapter,
-		routerActions:   routerActions,
+		engine:          engine,
+		messageReceiver: messageReceiver,
+		botExecutor:     botExecutor,
 	}
-}
-
-// RegisterRoute registers a route handler with optional configuration.
-// The route name is case-sensitive and must be unique.
-func (app *ChatbotApp[Obs]) RegisterRoute(
-	route string,
-	handler d_router.RouteHandler[Obs],
-	options ...d_router.RouterHandlerOptions,
-) {
-	app.engine.RegisterRoute(route, handler, options...)
-}
-
-// RegisterTrigger registers a global trigger that applies to all routes.
-// Triggers are regex patterns that, when matched, redirect to a specific route.
-func (app *ChatbotApp[Obs]) RegisterTrigger(trigger d_router.RouteTrigger) {
-	app.engine.RegisterTrigger(trigger)
-}
-
-// GetEngine returns the underlying engine for testing purposes.
-func (app *ChatbotApp[Obs]) GetEngine() *Engine[Obs] {
-	return app.engine
 }
 
 // HandleMessage processes an incoming message by finding and executing
@@ -77,24 +55,9 @@ func (app *ChatbotApp[Obs]) GetEngine() *Engine[Obs] {
 // Returns an error if no handler is registered for the route or if
 // the handler returns an error.
 func (app *ChatbotApp[Obs]) HandleMessage(userState d_user.UserState[Obs], message d_message.Message) (err error) {
-	result, err := app.engine.ExecuteWithRouter(userState, message, app.routerActions)
+	result, err := app.engine.Execute(userState, message, app.botExecutor)
 	if err != nil {
 		return err
-	}
-
-	if result == nil {
-		// If handler returns nil, stay on the same route
-		nextRoute := userState.Route.Next(userState.Route.Current())
-		app.handleResult(userState, message, nextRoute)
-		return nil
-	}
-
-	// Check if result is a redirect (from triggers or loops)
-	if redirect, ok := result.(*d_action.RedirectResponse); ok {
-		return app.handleRedirect(userState, message, *redirect)
-	}
-	if redirect, ok := result.(d_action.RedirectResponse); ok {
-		return app.handleRedirect(userState, message, redirect)
 	}
 
 	app.handleResult(userState, message, result)
@@ -107,6 +70,10 @@ func (app *ChatbotApp[Obs]) handleRedirect(
 	message d_message.Message,
 	redirect d_action.RedirectResponse,
 ) error {
+	err := app.botExecutor.SetRoute(userState.ChatID, redirect.TargetRoute)
+	if err != nil {
+		log.Printf("[ERROR] Failed to set route for chat %v: %v", userState.ChatID, err)
+	}
 	// Update user state with new route
 	userState.Route = userState.Route.Next(redirect.TargetRoute)
 	return app.HandleMessage(userState, message)
@@ -119,34 +86,31 @@ func (app *ChatbotApp[Obs]) handleResult(
 	result route_return.RouteReturn,
 ) {
 	chatID := userState.ChatID
+	var err error
 
 	switch r := result.(type) {
 	case *d_action.EndAction:
-		app.routerActions.EndSession(chatID, r.ID)
-
-	case d_action.EndAction:
-		app.routerActions.EndSession(chatID, r.ID)
+		err = app.botExecutor.EndSession(chatID, r.ID)
 
 	case *d_action.RedirectResponse:
-		app.handleRedirect(userState, message, *r)
-
-	case d_action.RedirectResponse:
-		app.handleRedirect(userState, message, r)
+		err = app.handleRedirect(userState, message, *r)
 
 	case *d_action.TransferToMenu:
-		app.routerActions.TransferToMenu(chatID, *r, message)
+		err = app.botExecutor.TransferToMenu(chatID, *r, message)
 
-	case d_action.TransferToMenu:
-		app.routerActions.TransferToMenu(chatID, r, message)
+	case *d_route.Route:
+		err = app.botExecutor.SetRoute(chatID, r.Current())
+
+	case nil:
+		err = app.botExecutor.SetRoute(chatID, userState.Route.Current())
 
 	default:
-		// Assume it's a route
-		switch route := result.(type) {
-		case *d_route.Route:
-			app.routerActions.SetRoute(chatID, route.Current())
-		case d_route.Route:
-			app.routerActions.SetRoute(chatID, route.Current())
-		}
+		log.Printf("[WARN] Unhandled route return type for chat %v: %T", chatID, r)
+		err = app.botExecutor.SetRoute(chatID, userState.Route.Current())
+	}
+
+	if err != nil {
+		log.Printf("[ERROR] Failed to handle result for chat %v: %v", chatID, err)
 	}
 }
 

@@ -31,23 +31,24 @@ func main() {
 		os.Getenv("ROUTER_API_PASSWORD"),
 	)
 
-	app := chat.NewApp(rabbit, routerApi)
+	// Create the engine and register routes
+	engine := chat.NewEngine[Obs]()
 
-	app.RegisterRoute("timeout_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+	engine.RegisterRoute("timeout_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		ctx.SendTextMessage("Timeout!")
 		return ctx.NextRoute("start")
 	})
 
-	app.RegisterRoute("loop_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+	engine.RegisterRoute("loop_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		return &chat.RedirectResponse{TargetRoute: "start"}
 	})
 
-	app.RegisterRoute("start", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+	engine.RegisterRoute("start", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		ctx.SendTextMessage("Send 'file' to receive a file, or 'upload' to upload from bytes.")
 		return ctx.NextRoute("handle_input")
 	})
 
-	app.RegisterRoute("handle_input", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+	engine.RegisterRoute("handle_input", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		input := ctx.Message.EntireText()
 
 		switch input {
@@ -90,6 +91,9 @@ func main() {
 
 		return nil
 	})
+
+	// Create the app with the engine
+	app := chat.NewApp(engine, rabbit, routerApi)
 
 	if err := app.Start(); err != nil {
 		log.Fatalf("Failed to start: %v", err)

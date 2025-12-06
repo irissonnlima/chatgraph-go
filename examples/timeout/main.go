@@ -32,30 +32,31 @@ func main() {
 		os.Getenv("ROUTER_API_PASSWORD"),
 	)
 
-	app := chat.NewApp(rabbit, routerApi)
+	// Create the engine and register routes
+	engine := chat.NewEngine[Obs]()
 
 	// Timeout handler
-	app.RegisterRoute("timeout_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+	engine.RegisterRoute("timeout_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		ctx.SendTextMessage("⏰ Operation timed out!")
 		return ctx.NextRoute("start")
 	})
 
 	// Custom timeout handler for slow operations
-	app.RegisterRoute("slow_timeout", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+	engine.RegisterRoute("slow_timeout", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		ctx.SendTextMessage("⏰ The slow operation timed out!")
 		return ctx.NextRoute("start")
 	})
 
-	app.RegisterRoute("loop_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+	engine.RegisterRoute("loop_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		return &chat.RedirectResponse{TargetRoute: "start"}
 	})
 
-	app.RegisterRoute("start", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+	engine.RegisterRoute("start", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		ctx.SendTextMessage("Type 'slow' to test a slow operation, or 'fast' for a fast one.")
 		return ctx.NextRoute("handle_input")
 	})
 
-	app.RegisterRoute("handle_input", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+	engine.RegisterRoute("handle_input", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		switch ctx.Message.EntireText() {
 		case "slow":
 			return &chat.RedirectResponse{TargetRoute: "slow_operation"}
@@ -68,7 +69,7 @@ func main() {
 	})
 
 	// Route with custom short timeout (5 seconds)
-	app.RegisterRoute("slow_operation", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+	engine.RegisterRoute("slow_operation", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		ctx.SendTextMessage("Starting slow operation (will timeout in 5 seconds)...")
 
 		// Simulate a slow operation
@@ -85,10 +86,13 @@ func main() {
 	})
 
 	// Route with default timeout
-	app.RegisterRoute("fast_operation", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+	engine.RegisterRoute("fast_operation", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		ctx.SendTextMessage("Fast operation completed instantly! ⚡")
 		return ctx.NextRoute("start")
 	})
+
+	// Create the app with the engine
+	app := chat.NewApp(engine, rabbit, routerApi)
 
 	if err := app.Start(); err != nil {
 		log.Fatalf("Failed to start: %v", err)

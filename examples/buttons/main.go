@@ -31,18 +31,19 @@ func main() {
 		os.Getenv("ROUTER_API_PASSWORD"),
 	)
 
-	app := chat.NewApp(rabbit, routerApi)
+	// Create the engine and register routes
+	engine := chat.NewEngine[Obs]()
 
-	app.RegisterRoute("timeout_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+	engine.RegisterRoute("timeout_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		ctx.SendTextMessage("Timeout! Please try again.")
 		return ctx.NextRoute("start")
 	})
 
-	app.RegisterRoute("loop_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+	engine.RegisterRoute("loop_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		return &chat.RedirectResponse{TargetRoute: "start"}
 	})
 
-	app.RegisterRoute("start", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+	engine.RegisterRoute("start", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		// Send a message with buttons
 		ctx.SendMessage(chat.Message{
 			TextMessage: chat.TextMessage{
@@ -71,7 +72,7 @@ func main() {
 		return ctx.NextRoute("handle_choice")
 	})
 
-	app.RegisterRoute("handle_choice", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+	engine.RegisterRoute("handle_choice", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		choice := ctx.Message.EntireText()
 
 		switch choice {
@@ -85,6 +86,9 @@ func main() {
 
 		return &chat.RedirectResponse{TargetRoute: "start"}
 	})
+
+	// Create the app with the engine
+	app := chat.NewApp(engine, rabbit, routerApi)
 
 	if err := app.Start(); err != nil {
 		log.Fatalf("Failed to start: %v", err)

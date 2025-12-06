@@ -48,10 +48,6 @@ type App[Obs any] = service.ChatbotApp[Obs]
 // It is designed to be testable in isolation without requiring external dependencies.
 type Engine[Obs any] = service.Engine[Obs]
 
-// ExecuteResult contains the result of executing a route handler.
-// It captures all outputs that would normally be sent to external services.
-type ExecuteResult[Obs any] = service.ExecuteResult[Obs]
-
 // ============================================================================
 // Type Aliases - Actions
 // ============================================================================
@@ -166,13 +162,13 @@ func NewRouterApi(url, username, password string) RouterService {
 // Constructors - Application
 // ============================================================================
 
-// NewApp creates a new chatbot application with the provided adapters.
+// NewApp creates a new chatbot application with the provided engine and adapters.
 func NewApp[Obs any](
+	engine *Engine[Obs],
 	receiver MessageReceiver[Obs],
 	router RouterService,
-	options ...RouterHandlerOptions,
 ) *App[Obs] {
-	return service.NewChatbotApp(receiver, router, options...)
+	return service.NewChatbotApp(engine, receiver, router)
 }
 
 // NewRoute creates a new Route from a path string.
@@ -180,8 +176,8 @@ func NewRoute(fullPath string, separator rune) Route {
 	return d_route.NewRoute(fullPath, separator)
 }
 
-// NewEngine creates a new Engine instance for testing route handlers.
-// The engine can execute routes without external dependencies.
+// NewEngine creates a new Engine instance for route registration and execution.
+// The engine handles route registration and can be used both for testing and production.
 func NewEngine[Obs any](options ...RouterHandlerOptions) *Engine[Obs] {
 	return service.NewEngine[Obs](options...)
 }

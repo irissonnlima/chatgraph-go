@@ -46,18 +46,15 @@ func main() {
 		os.Getenv("ROUTER_API_PASSWORD"),
 	)
 
-	// Create the chatbot application
-	app := chat.NewApp(rabbit, routerApi)
+	// Create the engine and register routes
+	engine := chat.NewEngine[Obs]()
+	engine.RegisterRoute("timeout_route", handleTimeout)
+	engine.RegisterRoute("loop_route", handleLoop)
+	engine.RegisterRoute("start", handleStart)
+	engine.RegisterRoute("menu", handleMenu)
 
-	// Register timeout handler (required)
-	app.RegisterRoute("timeout_route", handleTimeout)
-
-	// Register loop handler (required)
-	app.RegisterRoute("loop_route", handleLoop)
-
-	// Register main routes
-	app.RegisterRoute("start", handleStart)
-	app.RegisterRoute("menu", handleMenu)
+	// Create the chatbot application with the engine
+	app := chat.NewApp(engine, rabbit, routerApi)
 
 	// Start the application
 	if err := app.Start(); err != nil {
