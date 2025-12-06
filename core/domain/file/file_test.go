@@ -293,3 +293,32 @@ func TestFileTypeConstants(t *testing.T) {
 		})
 	}
 }
+
+func TestFile_Bytes_EmptyURL(t *testing.T) {
+	file := File{
+		ID:   "123",
+		Name: "test.txt",
+		URL:  "",
+	}
+
+	_, err := file.Bytes()
+	if err == nil {
+		t.Error("File.Bytes() should return error for empty URL")
+	}
+	if err.Error() != "file URL is empty" {
+		t.Errorf("File.Bytes() error = %v, want 'file URL is empty'", err)
+	}
+}
+
+func TestFile_Bytes_InvalidURL(t *testing.T) {
+	file := File{
+		ID:   "123",
+		Name: "test.txt",
+		URL:  "not-a-valid-url",
+	}
+
+	_, err := file.Bytes()
+	if err == nil {
+		t.Error("File.Bytes() should return error for invalid URL")
+	}
+}
