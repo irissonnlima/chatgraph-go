@@ -1,6 +1,6 @@
 package d_context
 
-import d_route "chatgraph/core/domain/route"
+import d_route "github.com/irissonnlima/chatgraph-go/core/domain/route"
 
 func (c *ChatContext[Obs]) GetRoute() d_route.Route {
 	return c.UserState.Route

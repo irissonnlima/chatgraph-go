@@ -3,10 +3,10 @@
 package adapter_output
 
 import (
-	d_action "chatgraph/core/domain/action"
-	d_file "chatgraph/core/domain/file"
-	d_message "chatgraph/core/domain/message"
-	d_user "chatgraph/core/domain/user"
+	d_action "github.com/irissonnlima/chatgraph-go/core/domain/action"
+	d_file "github.com/irissonnlima/chatgraph-go/core/domain/file"
+	d_message "github.com/irissonnlima/chatgraph-go/core/domain/message"
+	d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
 )
 
 // RouterService defines the interface for routing and messaging operations.

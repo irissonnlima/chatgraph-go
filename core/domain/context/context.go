@@ -3,9 +3,9 @@
 package d_context
 
 import (
-	d_message "chatgraph/core/domain/message"
-	d_user "chatgraph/core/domain/user"
-	adapter_output "chatgraph/core/ports/adapters/output"
+	d_message "github.com/irissonnlima/chatgraph-go/core/domain/message"
+	d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
+	adapter_output "github.com/irissonnlima/chatgraph-go/core/ports/adapters/output"
 	"context"
 	"time"
 )

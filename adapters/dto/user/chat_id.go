@@ -1,6 +1,6 @@
 package dto_user
 
-import d_user "chatgraph/core/domain/user"
+import d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
 
 // ChatID uniquely identifies a chat session by combining user and company identifiers.
 // Both fields are required for a valid ChatID.

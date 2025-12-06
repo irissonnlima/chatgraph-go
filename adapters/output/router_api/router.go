@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"time"
 
-	adapter_output "chatgraph/core/ports/adapters/output"
+	adapter_output "github.com/irissonnlima/chatgraph-go/core/ports/adapters/output"
 )
 
 const MAX_RETRIES = 5

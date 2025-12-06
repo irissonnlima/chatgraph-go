@@ -1,6 +1,6 @@
 package dto_user
 
-import d_user "chatgraph/core/domain/user"
+import d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
 
 // Menu represents a menu configuration in the chatbot.
 // Menus are associated with departments and can be active or inactive.

@@ -3,8 +3,8 @@
 package adapter_input
 
 import (
-	d_message "chatgraph/core/domain/message"
-	d_user "chatgraph/core/domain/user"
+	d_message "github.com/irissonnlima/chatgraph-go/core/domain/message"
+	d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
 )
 
 // IMessageReceiver defines the interface for consuming messages from a queue.

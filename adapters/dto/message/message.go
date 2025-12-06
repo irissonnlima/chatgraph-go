@@ -3,8 +3,8 @@
 package dto_message
 
 import (
-	dto_file "chatgraph/adapters/dto/file"
-	d_message "chatgraph/core/domain/message"
+	dto_file "github.com/irissonnlima/chatgraph-go/adapters/dto/file"
+	d_message "github.com/irissonnlima/chatgraph-go/core/domain/message"
 )
 
 // TextMessage represents the text content of a message.

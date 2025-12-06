@@ -3,7 +3,7 @@
 package d_message
 
 import (
-	d_file "chatgraph/core/domain/file"
+	d_file "github.com/irissonnlima/chatgraph-go/core/domain/file"
 	"fmt"
 	"strings"
 )
@@ -141,7 +141,7 @@ func (m Message) HasButtons() bool {
 
 // HasFile returns true if the message contains a file attachment.
 func (m Message) HasFile() bool {
-	return m.File.IsEmpty()
+	return !m.File.IsEmpty()
 }
 
 // ValidadeButtons validates all buttons in the message.

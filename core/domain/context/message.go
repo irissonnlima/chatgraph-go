@@ -1,6 +1,6 @@
 package d_context
 
-import d_message "chatgraph/core/domain/message"
+import d_message "github.com/irissonnlima/chatgraph-go/core/domain/message"
 
 // SendMessage sends a message to the specified chat ID.
 // Returns an error if the message could not be sent.

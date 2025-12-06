@@ -1,11 +1,11 @@
 package service
 
 import (
-	route_return "chatgraph/core/domain"
-	d_action "chatgraph/core/domain/action"
-	d_message "chatgraph/core/domain/message"
-	d_route "chatgraph/core/domain/route"
-	d_user "chatgraph/core/domain/user"
+	route_return "github.com/irissonnlima/chatgraph-go/core/domain"
+	d_action "github.com/irissonnlima/chatgraph-go/core/domain/action"
+	d_message "github.com/irissonnlima/chatgraph-go/core/domain/message"
+	d_route "github.com/irissonnlima/chatgraph-go/core/domain/route"
+	d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
 	"log"
 )
 

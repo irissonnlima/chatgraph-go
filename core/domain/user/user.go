@@ -3,7 +3,7 @@
 package d_user
 
 import (
-	d_route "chatgraph/core/domain/route"
+	d_route "github.com/irissonnlima/chatgraph-go/core/domain/route"
 	"encoding/json"
 )
 

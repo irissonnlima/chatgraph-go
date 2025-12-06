@@ -1,8 +1,8 @@
 package d_router
 
 import (
-	route_return "chatgraph/core/domain"
-	d_context "chatgraph/core/domain/context"
+	route_return "github.com/irissonnlima/chatgraph-go/core/domain"
+	d_context "github.com/irissonnlima/chatgraph-go/core/domain/context"
 )
 
 // RouteHandler defines the signature of a route handler function.

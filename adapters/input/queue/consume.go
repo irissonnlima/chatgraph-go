@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"log"
 
-	dto_message "chatgraph/adapters/dto/message"
-	dto_user "chatgraph/adapters/dto/user"
-	d_message "chatgraph/core/domain/message"
-	d_user "chatgraph/core/domain/user"
+	dto_message "github.com/irissonnlima/chatgraph-go/adapters/dto/message"
+	dto_user "github.com/irissonnlima/chatgraph-go/adapters/dto/user"
+	d_message "github.com/irissonnlima/chatgraph-go/core/domain/message"
+	d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
 )
 
 // MessageType represents the type of message received from the queue.

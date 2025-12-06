@@ -2,7 +2,7 @@
 // It supports images, videos, audio files, and generic file types.
 package dto_file
 
-import d_file "chatgraph/core/domain/file"
+import d_file "github.com/irissonnlima/chatgraph-go/core/domain/file"
 
 // File represents a file attachment in a message.
 type File struct {

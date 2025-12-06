@@ -1,7 +1,7 @@
 package d_context
 
 import (
-	d_file "chatgraph/core/domain/file"
+	d_file "github.com/irissonnlima/chatgraph-go/core/domain/file"
 	"os"
 	"path/filepath"
 )

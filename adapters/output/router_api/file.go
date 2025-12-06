@@ -7,8 +7,8 @@ import (
 	"errors"
 	"os"
 
-	dto_file "chatgraph/adapters/dto/file"
-	d_file "chatgraph/core/domain/file"
+	dto_file "github.com/irissonnlima/chatgraph-go/adapters/dto/file"
+	d_file "github.com/irissonnlima/chatgraph-go/core/domain/file"
 )
 
 type fileReturn struct {

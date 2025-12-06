@@ -7,14 +7,14 @@ import (
 	"log"
 	"regexp"
 
-	route_return "chatgraph/core/domain"
-	d_action "chatgraph/core/domain/action"
-	d_context "chatgraph/core/domain/context"
-	d_message "chatgraph/core/domain/message"
-	d_router "chatgraph/core/domain/router"
-	d_user "chatgraph/core/domain/user"
-	adapter_input "chatgraph/core/ports/adapters/input"
-	adapter_output "chatgraph/core/ports/adapters/output"
+	route_return "github.com/irissonnlima/chatgraph-go/core/domain"
+	d_action "github.com/irissonnlima/chatgraph-go/core/domain/action"
+	d_context "github.com/irissonnlima/chatgraph-go/core/domain/context"
+	d_message "github.com/irissonnlima/chatgraph-go/core/domain/message"
+	d_router "github.com/irissonnlima/chatgraph-go/core/domain/router"
+	d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
+	adapter_input "github.com/irissonnlima/chatgraph-go/core/ports/adapters/input"
+	adapter_output "github.com/irissonnlima/chatgraph-go/core/ports/adapters/output"
 )
 
 // ChatbotApp is the main application structure that manages routes and message processing.

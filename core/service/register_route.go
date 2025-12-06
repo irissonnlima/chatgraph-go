@@ -1,7 +1,7 @@
 package service
 
 import (
-	d_router "chatgraph/core/domain/router"
+	d_router "github.com/irissonnlima/chatgraph-go/core/domain/router"
 	"strings"
 )
 

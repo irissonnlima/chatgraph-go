@@ -1,7 +1,7 @@
 package rabbitmq
 
 import (
-	adapter_input "chatgraph/core/ports/adapters/input"
+	adapter_input "github.com/irissonnlima/chatgraph-go/core/ports/adapters/input"
 	"fmt"
 	"log"
 	"time"

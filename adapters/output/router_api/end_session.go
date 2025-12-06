@@ -1,9 +1,9 @@
 package output_router_api
 
 import (
-	dto_action "chatgraph/adapters/dto/action"
-	dto_user "chatgraph/adapters/dto/user"
-	d_user "chatgraph/core/domain/user"
+	dto_action "github.com/irissonnlima/chatgraph-go/adapters/dto/action"
+	dto_user "github.com/irissonnlima/chatgraph-go/adapters/dto/user"
+	d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
 	"encoding/json"
 )
 
