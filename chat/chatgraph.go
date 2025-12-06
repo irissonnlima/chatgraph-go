@@ -44,6 +44,14 @@ type RouteReturn = route_return.RouteReturn
 // App is the main chatbot application.
 type App[Obs any] = service.ChatbotApp[Obs]
 
+// Engine handles route registration and execution logic without I/O.
+// It is designed to be testable in isolation without requiring external dependencies.
+type Engine[Obs any] = service.Engine[Obs]
+
+// ExecuteResult contains the result of executing a route handler.
+// It captures all outputs that would normally be sent to external services.
+type ExecuteResult[Obs any] = service.ExecuteResult[Obs]
+
 // ============================================================================
 // Type Aliases - Actions
 // ============================================================================
@@ -170,4 +178,10 @@ func NewApp[Obs any](
 // NewRoute creates a new Route from a path string.
 func NewRoute(fullPath string, separator rune) Route {
 	return d_route.NewRoute(fullPath, separator)
+}
+
+// NewEngine creates a new Engine instance for testing route handlers.
+// The engine can execute routes without external dependencies.
+func NewEngine[Obs any](options ...RouterHandlerOptions) *Engine[Obs] {
+	return service.NewEngine[Obs](options...)
 }
