@@ -18,7 +18,7 @@ A lightweight, flexible chatbot framework for Go with route-based conversation f
 ## Installation
 
 ```bash
-go get github.com/irissonnlima/chatgraph-go/chatgraph@latest
+go get github.com/irissonnlima/chatgraph-go/chat@latest
 ```
 
 ## Quick Start
@@ -27,7 +27,7 @@ go get github.com/irissonnlima/chatgraph-go/chatgraph@latest
 package main
 
 import (
-    "github.com/irissonnlima/chatgraph-go/chatgraph"
+    "github.com/irissonnlima/chatgraph-go/chat"
 )
 
 // Define your observation type for session data
@@ -37,31 +37,31 @@ type Obs struct {
 
 func main() {
     // Create adapters
-    rabbit := chatgraph.NewRabbitMQ[Obs]("user", "pass", "host", "vhost", "queue")
-    router := chatgraph.NewRouterApi("http://api-url", "user", "pass")
+    rabbit := chat.NewRabbitMQ[Obs]("user", "pass", "host", "vhost", "queue")
+    router := chat.NewRouterApi("http://api-url", "user", "pass")
     
     // Create app
-    app := chatgraph.NewApp(rabbit, router)
+    app := chat.NewApp(rabbit, router)
     
     // Register routes
-    app.RegisterRoute("start", func(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
+    app.RegisterRoute("start", func(ctx *chat.Context[Obs]) chat.RouteReturn {
         ctx.SendTextMessage("Hello! Type something:")
         return ctx.NextRoute("echo")
     })
     
-    app.RegisterRoute("echo", func(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
+    app.RegisterRoute("echo", func(ctx *chat.Context[Obs]) chat.RouteReturn {
         ctx.SendTextMessage("You said: " + ctx.Message.EntireText())
         return ctx.NextRoute("start")
     })
     
     // Required: timeout and loop handlers
-    app.RegisterRoute("timeout_route", func(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
+    app.RegisterRoute("timeout_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
         ctx.SendTextMessage("Session timed out!")
         return ctx.NextRoute("start")
     })
     
-    app.RegisterRoute("loop_route", func(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
-        return &chatgraph.RedirectResponse{TargetRoute: "start"}
+    app.RegisterRoute("loop_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+        return &chat.RedirectResponse{TargetRoute: "start"}
     })
     
     app.Start()
@@ -99,7 +99,7 @@ Routes are named conversation states. Each route has a handler function that:
 - Returns the next action (next route, redirect, end session, etc.)
 
 ```go
-app.RegisterRoute("greeting", func(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
+app.RegisterRoute("greeting", func(ctx *chat.Context[Obs]) chat.RouteReturn {
     ctx.SendTextMessage("Hello!")
     return ctx.NextRoute("menu")  // User's next message goes to "menu" route
 })
@@ -124,7 +124,7 @@ Handlers can return different actions:
 return ctx.NextRoute("menu")
 
 // Redirect: Immediately executes "menu" without waiting
-return &chatgraph.RedirectResponse{TargetRoute: "menu"}
+return &chat.RedirectResponse{TargetRoute: "menu"}
 ```
 
 #### 3. Context
@@ -132,7 +132,7 @@ return &chatgraph.RedirectResponse{TargetRoute: "menu"}
 The `Context` provides access to:
 
 ```go
-func handler(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
+func handler(ctx *chat.Context[Obs]) chat.RouteReturn {
     // User information
     ctx.UserState.User.Name      // User's name
     ctx.UserState.ChatID         // Chat identifier
@@ -150,7 +150,7 @@ func handler(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
     
     // Send messages
     ctx.SendTextMessage("Hello!")
-    ctx.SendMessage(chatgraph.Message{...})
+    ctx.SendMessage(chat.Message{...})
     
     // File operations
     ctx.LoadFile("path/to/file")           // Upload from disk
@@ -173,8 +173,8 @@ Each route has a configurable timeout. When exceeded:
 app.RegisterRoute("slow_task", handler)
 
 // Custom timeout: 30 seconds, redirects to "custom_timeout"
-app.RegisterRoute("fast_task", handler, chatgraph.RouterHandlerOptions{
-    Timeout: &chatgraph.TimeoutRouteOps{
+app.RegisterRoute("fast_task", handler, chat.RouterHandlerOptions{
+    Timeout: &chat.TimeoutRouteOps{
         Duration: 30 * time.Second,
         Route:    "custom_timeout",
     },
@@ -214,15 +214,15 @@ A → A → A → A (4th time) ──▶ Redirect to loop_route
 Send interactive messages with clickable buttons:
 
 ```go
-ctx.SendMessage(chatgraph.Message{
-    TextMessage: chatgraph.TextMessage{
+ctx.SendMessage(chat.Message{
+    TextMessage: chat.TextMessage{
         Title:  "Choose an option",
         Detail: "Please select one:",
     },
-    Buttons: []chatgraph.Button{
-        {Type: chatgraph.POSTBACK, Title: "Option A", Detail: "option_a"},
-        {Type: chatgraph.POSTBACK, Title: "Option B", Detail: "option_b"},
-        {Type: chatgraph.URL, Title: "Visit Site", Detail: "https://example.com"},
+    Buttons: []chat.Button{
+        {Type: chat.POSTBACK, Title: "Option A", Detail: "option_a"},
+        {Type: chat.POSTBACK, Title: "Option B", Detail: "option_b"},
+        {Type: chat.URL, Title: "Visit Site", Detail: "https://example.com"},
     },
 })
 ```
@@ -242,7 +242,7 @@ type Obs struct {
     UserData string `json:"user_data"`
 }
 
-func handler(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
+func handler(ctx *chat.Context[Obs]) chat.RouteReturn {
     obs := ctx.GetObservation()
     obs.Step++
     obs.UserData = ctx.Message.EntireText()
@@ -260,7 +260,7 @@ Upload and send files:
 // Upload from disk
 file, err := ctx.LoadFile("document.pdf")
 if err == nil && file != nil {
-    ctx.SendMessage(chatgraph.Message{File: *file})
+    ctx.SendMessage(chat.Message{File: *file})
 }
 
 // Upload from bytes (e.g., generated content)
@@ -275,12 +275,12 @@ Files are deduplicated using SHA256 hash - uploading the same content twice retu
 ### Default Options
 
 ```go
-app := chatgraph.NewApp(rabbit, router, chatgraph.RouterHandlerOptions{
-    Timeout: &chatgraph.TimeoutRouteOps{
+app := chat.NewApp(rabbit, router, chat.RouterHandlerOptions{
+    Timeout: &chat.TimeoutRouteOps{
         Duration: 10 * time.Minute,  // Default timeout for all routes
         Route:    "timeout_route",
     },
-    LoopCount: &chatgraph.LoopCountRouteOps{
+    LoopCount: &chat.LoopCountRouteOps{
         Count: 5,                    // Allow 5 consecutive same-route visits
         Route: "loop_route",
     },
@@ -290,8 +290,8 @@ app := chatgraph.NewApp(rabbit, router, chatgraph.RouterHandlerOptions{
 ### Per-Route Options
 
 ```go
-app.RegisterRoute("sensitive", handler, chatgraph.RouterHandlerOptions{
-    Timeout: &chatgraph.TimeoutRouteOps{
+app.RegisterRoute("sensitive", handler, chat.RouterHandlerOptions{
+    Timeout: &chat.TimeoutRouteOps{
         Duration: 1 * time.Minute,
         Route:    "sensitive_timeout",
     },
@@ -311,7 +311,7 @@ See the [examples/](./examples/) directory for complete working examples:
 
 ```
 chatgraph-go/
-├── chatgraph/           # Unified public API package
+├── chat/                # Unified public API package
 │   └── chatgraph.go     # Type aliases and constructors
 ├── adapters/
 │   ├── input/queue/     # RabbitMQ message consumer

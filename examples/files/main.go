@@ -7,7 +7,7 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/irissonnlima/chatgraph-go/chatgraph"
+	"github.com/irissonnlima/chatgraph-go/chat"
 )
 
 type Obs struct{}
@@ -17,7 +17,7 @@ func main() {
 		log.Println("[WARN] No .env file found")
 	}
 
-	rabbit := chatgraph.NewRabbitMQ[Obs](
+	rabbit := chat.NewRabbitMQ[Obs](
 		os.Getenv("RABBITMQ_USER"),
 		os.Getenv("RABBITMQ_PASSWORD"),
 		os.Getenv("RABBITMQ_HOST"),
@@ -25,29 +25,29 @@ func main() {
 		os.Getenv("RABBITMQ_QUEUE"),
 	)
 
-	routerApi := chatgraph.NewRouterApi(
+	routerApi := chat.NewRouterApi(
 		os.Getenv("ROUTER_API_URL"),
 		os.Getenv("ROUTER_API_USER"),
 		os.Getenv("ROUTER_API_PASSWORD"),
 	)
 
-	app := chatgraph.NewApp(rabbit, routerApi)
+	app := chat.NewApp(rabbit, routerApi)
 
-	app.RegisterRoute("timeout_route", func(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
+	app.RegisterRoute("timeout_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		ctx.SendTextMessage("Timeout!")
 		return ctx.NextRoute("start")
 	})
 
-	app.RegisterRoute("loop_route", func(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
-		return &chatgraph.RedirectResponse{TargetRoute: "start"}
+	app.RegisterRoute("loop_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+		return &chat.RedirectResponse{TargetRoute: "start"}
 	})
 
-	app.RegisterRoute("start", func(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
+	app.RegisterRoute("start", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		ctx.SendTextMessage("Send 'file' to receive a file, or 'upload' to upload from bytes.")
 		return ctx.NextRoute("handle_input")
 	})
 
-	app.RegisterRoute("handle_input", func(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
+	app.RegisterRoute("handle_input", func(ctx *chat.Context[Obs]) chat.RouteReturn {
 		input := ctx.Message.EntireText()
 
 		switch input {
@@ -59,8 +59,8 @@ func main() {
 				return nil
 			}
 			if file != nil {
-				ctx.SendMessage(chatgraph.Message{
-					TextMessage: chatgraph.TextMessage{
+				ctx.SendMessage(chat.Message{
+					TextMessage: chat.TextMessage{
 						Detail: "Here's your file:",
 					},
 					File: *file,
@@ -76,8 +76,8 @@ func main() {
 				return nil
 			}
 			if file != nil {
-				ctx.SendMessage(chatgraph.Message{
-					TextMessage: chatgraph.TextMessage{
+				ctx.SendMessage(chat.Message{
+					TextMessage: chat.TextMessage{
 						Detail: "File created from bytes:",
 					},
 					File: *file,

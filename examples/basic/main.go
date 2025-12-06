@@ -14,7 +14,7 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/irissonnlima/chatgraph-go/chatgraph"
+	"github.com/irissonnlima/chatgraph-go/chat"
 )
 
 // Obs defines the custom observation data for this chatbot.
@@ -31,7 +31,7 @@ func main() {
 	}
 
 	// Create message receiver (RabbitMQ)
-	rabbit := chatgraph.NewRabbitMQ[Obs](
+	rabbit := chat.NewRabbitMQ[Obs](
 		os.Getenv("RABBITMQ_USER"),
 		os.Getenv("RABBITMQ_PASSWORD"),
 		os.Getenv("RABBITMQ_HOST"),
@@ -40,14 +40,14 @@ func main() {
 	)
 
 	// Create router API client
-	routerApi := chatgraph.NewRouterApi(
+	routerApi := chat.NewRouterApi(
 		os.Getenv("ROUTER_API_URL"),
 		os.Getenv("ROUTER_API_USER"),
 		os.Getenv("ROUTER_API_PASSWORD"),
 	)
 
 	// Create the chatbot application
-	app := chatgraph.NewApp(rabbit, routerApi)
+	app := chat.NewApp(rabbit, routerApi)
 
 	// Register timeout handler (required)
 	app.RegisterRoute("timeout_route", handleTimeout)
@@ -65,19 +65,19 @@ func main() {
 	}
 }
 
-func handleTimeout(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
+func handleTimeout(ctx *chat.Context[Obs]) chat.RouteReturn {
 	log.Println("Timeout route executed")
 	ctx.SendTextMessage("Your request has timed out. Please try again.")
 	return ctx.NextRoute("start")
 }
 
-func handleLoop(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
+func handleLoop(ctx *chat.Context[Obs]) chat.RouteReturn {
 	log.Println("Loop detected:", ctx.UserState.Route.CurrentRepeated())
 	ctx.SendTextMessage("Loop detected. Redirecting to start.")
-	return &chatgraph.RedirectResponse{TargetRoute: "start"}
+	return &chat.RedirectResponse{TargetRoute: "start"}
 }
 
-func handleStart(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
+func handleStart(ctx *chat.Context[Obs]) chat.RouteReturn {
 	log.Println("Start route executed")
 	log.Printf("User: %s", ctx.UserState.User.Name)
 
@@ -98,12 +98,12 @@ func handleStart(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
 	return ctx.NextRoute("menu")
 }
 
-func handleMenu(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
+func handleMenu(ctx *chat.Context[Obs]) chat.RouteReturn {
 	switch ctx.Message.EntireText() {
 	case "end":
-		return chatgraph.EndAction{ID: "session_ended"}
+		return chat.EndAction{ID: "session_ended"}
 	case "start":
-		return chatgraph.RedirectResponse{TargetRoute: "start"}
+		return chat.RedirectResponse{TargetRoute: "start"}
 	default:
 		ctx.SendTextMessage("Type 'end' to finish or 'start' to restart.")
 		return nil

@@ -89,12 +89,12 @@ import (
 type Obs struct{} // Your observation type
 
 func main() {
-    rabbit := chatgraph.NewRabbitMQ[Obs]("user", "pass", "host", "vhost", "queue")
-    router := chatgraph.NewRouterApi("url", "user", "pass")
+    rabbit := chat.NewRabbitMQ[Obs]("user", "pass", "host", "vhost", "queue")
+    router := chat.NewRouterApi("url", "user", "pass")
     
-    app := chatgraph.NewApp(rabbit, router)
+    app := chat.NewApp(rabbit, router)
     
-    app.RegisterRoute("start", func(ctx *chatgraph.Context[Obs]) chatgraph.RouteReturn {
+    app.RegisterRoute("start", func(ctx *chat.Context[Obs]) chat.RouteReturn {
         ctx.SendTextMessage("Hello World!")
         return nil
     })

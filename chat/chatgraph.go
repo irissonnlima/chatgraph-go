@@ -1,18 +1,18 @@
-// Package chatgraph provides a simple framework for building chatbot applications.
+// Package chat provides a simple framework for building chatbot applications.
 // It offers routing, message handling, context management, and integrations with
 // message queues and external APIs.
 //
 // Example usage:
 //
-//	import "github.com/irissonnlima/chatgraph-go"
+//	import "github.com/irissonnlima/chatgraph-go/chat"
 //
-//	app := chatgraph.NewApp(receiver, router)
-//	app.RegisterRoute("start", func(ctx *chatgraph.Context[MyObs]) chatgraph.RouteReturn {
+//	app := chat.NewApp(receiver, router)
+//	app.RegisterRoute("start", func(ctx *chat.Context[MyObs]) chat.RouteReturn {
 //	    ctx.SendTextMessage("Hello!")
 //	    return ctx.NextRoute("next")
 //	})
 //	app.Start()
-package chatgraph
+package chat
 
 import (
 	input_queue "github.com/irissonnlima/chatgraph-go/adapters/input/queue"
