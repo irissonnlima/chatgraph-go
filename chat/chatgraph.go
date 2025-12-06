@@ -138,7 +138,7 @@ type RouteTrigger = d_router.RouteTrigger
 type MessageReceiver[Obs any] = adapter_input.IMessageReceiver[Obs]
 
 // RouterService is the interface for routing and messaging operations.
-type RouterService = adapter_output.RouterService
+type RouterService = adapter_output.IBotExecutor
 
 // ============================================================================
 // Constructors - Adapters

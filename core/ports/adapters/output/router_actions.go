@@ -9,9 +9,9 @@ import (
 	d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
 )
 
-// RouterService defines the interface for routing and messaging operations.
+// IBotExecutor defines the interface for routing and messaging operations.
 // Implementations handle message sending, session management, and state updates.
-type RouterService interface {
+type IBotExecutor interface {
 	// SendMessage sends a message to the specified chat ID.
 	// Returns an error if the message could not be delivered.
 	SendMessage(to d_user.ChatID, message d_message.Message, platform string) error

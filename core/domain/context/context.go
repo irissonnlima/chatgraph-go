@@ -3,11 +3,12 @@
 package d_context
 
 import (
+	"context"
+	"time"
+
 	d_message "github.com/irissonnlima/chatgraph-go/core/domain/message"
 	d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
 	adapter_output "github.com/irissonnlima/chatgraph-go/core/ports/adapters/output"
-	"context"
-	"time"
 )
 
 // ChatContext holds all the information needed to process a chat interaction.
@@ -22,7 +23,7 @@ type ChatContext[Obs any] struct {
 	// Message is the incoming message being processed.
 	Message d_message.Message
 	// router provides messaging and session management capabilities.
-	router adapter_output.RouterService
+	router adapter_output.IBotExecutor
 }
 
 // NewChatContext creates a new ChatContext with the provided parameters.
@@ -31,7 +32,7 @@ func NewChatContext[Obs any](
 	userState d_user.UserState[Obs],
 	message d_message.Message,
 
-	router adapter_output.RouterService,
+	router adapter_output.IBotExecutor,
 
 	timeout time.Duration,
 ) (ChatContext[Obs], context.CancelFunc) {

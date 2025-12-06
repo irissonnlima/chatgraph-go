@@ -28,7 +28,7 @@ type RouterApi struct {
 	Password string
 }
 
-func NewRouterApi(url, username, password string) adapter_output.RouterService {
+func NewRouterApi(url, username, password string) adapter_output.IBotExecutor {
 	return &RouterApi{
 		Url:      url,
 		Username: username,
