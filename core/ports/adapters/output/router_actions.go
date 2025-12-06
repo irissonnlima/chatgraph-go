@@ -4,6 +4,7 @@ package adapter_output
 
 import (
 	d_action "chatgraph/core/domain/action"
+	d_file "chatgraph/core/domain/file"
 	d_message "chatgraph/core/domain/message"
 	d_user "chatgraph/core/domain/user"
 )
@@ -29,4 +30,10 @@ type RouterService interface {
 
 	// TransferToMenu transfers the user to other menu.
 	TransferToMenu(chatID d_user.ChatID, transfer d_action.TransferToMenu, message d_message.Message) error
+
+	// UploadFile uploads a file from the given filepath.
+	UploadFile(filepath string) (*d_file.File, error)
+
+	// GetFile retrieves a file by its ID.
+	GetFile(fileID string) (*d_file.File, error)
 }
