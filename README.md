@@ -5,6 +5,8 @@
 
 A lightweight, flexible chatbot framework for Go with route-based conversation flow, timeout handling, and loop protection.
 
+English | [Português](README.pt-br.md)
+
 ## Features
 
 - 🚀 **Simple API** - Single import, intuitive route registration
