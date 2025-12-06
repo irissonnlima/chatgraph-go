@@ -26,7 +26,7 @@ type ChatbotApp[Obs any] struct {
 	// messageReceiver handles message queue consumption.
 	messageReceiver adapter_input.IMessageReceiver[Obs]
 	// routerActions provides messaging and session management capabilities.
-	routerActions adapter_output.RouterService
+	routerActions adapter_output.IBotExecutor
 	// defaultOptions holds the default handler options.
 	defaultOptions d_router.RouterHandlerOptions
 	// routeTriggers holds the route triggers configuration.
@@ -47,7 +47,7 @@ If not provided, the following defaults are used:
 */
 func NewChatbotApp[Obs any](
 	queueAdapter adapter_input.IMessageReceiver[Obs],
-	routerActions adapter_output.RouterService,
+	routerActions adapter_output.IBotExecutor,
 	defaultOptions ...d_router.RouterHandlerOptions,
 ) *ChatbotApp[Obs] {
 
