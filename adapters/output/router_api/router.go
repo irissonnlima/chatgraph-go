@@ -6,7 +6,10 @@ import (
 	"errors"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 
 	adapter_output "chatgraph/core/ports/adapters/output"
@@ -82,4 +85,81 @@ func (r *RouterApi) post(endpoint string, payload []byte) error {
 	}
 
 	return err
+}
+
+func (r *RouterApi) get(endpoint string) ([]byte, error) {
+	req, err := http.NewRequest(http.MethodGet, r.Url+endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.SetBasicAuth(r.Username, r.Password)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
+func (r *RouterApi) uploadFileMultipart(endpoint, filePath string) ([]byte, error) {
+	// Open the file
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	// Create a buffer to write the multipart form
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+
+	// Create the form file field "content"
+	part, err := writer.CreateFormFile("content", filepath.Base(filePath))
+	if err != nil {
+		return nil, err
+	}
+
+	// Copy file content to the form field
+	if _, err := io.Copy(part, file); err != nil {
+		return nil, err
+	}
+
+	// Close the writer to finalize the form
+	if err := writer.Close(); err != nil {
+		return nil, err
+	}
+
+	// Create the request
+	req, err := http.NewRequest(http.MethodPost, r.Url+endpoint, &body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req.SetBasicAuth(r.Username, r.Password)
+
+	// Send the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	// Read response body
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return respBody, nil
 }
