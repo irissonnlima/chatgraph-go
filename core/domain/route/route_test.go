@@ -119,12 +119,12 @@ func TestRoute_CurrentRepeated(t *testing.T) {
 		{
 			name:  "three consecutive repeats at end",
 			route: NewRoute("start > choice > choice > choice", '>'),
-			want:  4, // counts from end until different: choice, choice, choice, then start (count stops)
+			want:  3, // choice appears 3 times consecutively at end
 		},
 		{
 			name:  "no repeats at end",
 			route: NewRoute("start > menu > options", '>'),
-			want:  2, // options != menu, so returns 2 (options counted + 1 when different found)
+			want:  1, // options appears only once
 		},
 		{
 			name:  "all same routes",
@@ -134,7 +134,7 @@ func TestRoute_CurrentRepeated(t *testing.T) {
 		{
 			name:  "repeat in middle only",
 			route: NewRoute("start > choice > choice > end", '>'),
-			want:  2, // end != choice, returns 2
+			want:  1, // end appears only once at the end
 		},
 		{
 			name:  "single route",
@@ -144,7 +144,7 @@ func TestRoute_CurrentRepeated(t *testing.T) {
 		{
 			name:  "two consecutive repeats at end",
 			route: NewRoute("start > menu > end > end", '>'),
-			want:  3, // end, end, then menu (different) = 3
+			want:  2, // end appears 2 times consecutively at end
 		},
 	}
 
