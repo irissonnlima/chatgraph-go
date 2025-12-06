@@ -15,7 +15,8 @@ Um framework leve e flexível para criação de chatbots em Go, com fluxo de con
 - 🔁 **Proteção contra Loops** - Previne loops de redirecionamento infinitos automaticamente
 - 📦 **Observations Genéricas** - Armazene dados de sessão customizados com type safety
 - 🔌 **Adaptadores Plugáveis** - RabbitMQ para entrada, REST API para saída (facilmente extensível)
-- 📄 **Suporte a Arquivos** - Upload e envio de arquivos com deduplicação via SHA256
+- 📄 **Suporte a Arquivos** - Upload, envio e download de arquivos com deduplicação via SHA256
+- ✅ **Bem Testado** - Cobertura de testes abrangente para os pacotes principais
 
 ## Instalação
 
@@ -272,6 +273,19 @@ file, err := ctx.LoadFileBytes("saudacao.txt", conteudo)
 
 Arquivos são deduplicados usando hash SHA256 - fazer upload do mesmo conteúdo duas vezes retorna o arquivo em cache.
 
+**Download do conteúdo do arquivo:**
+
+```go
+// Baixar bytes do arquivo a partir da URL
+if !ctx.Message.File.IsEmpty() {
+    bytes, err := ctx.Message.File.Bytes()
+    if err == nil {
+        // Processar os bytes do arquivo
+        fmt.Printf("Baixados %d bytes\n", len(bytes))
+    }
+}
+```
+
 ## Configuração
 
 ### Opções Padrão
@@ -329,6 +343,18 @@ chatgraph-go/
 │   ├── ports/adapters/  # Interfaces de adaptadores
 │   └── service/         # Serviço da aplicação
 └── examples/            # Exemplos de uso
+```
+
+## Testes
+
+Execute os testes com cobertura:
+
+```bash
+go test ./... -cover
+
+# Ou use o script de cobertura para relatório HTML
+./coverage.sh
+# Abra coverage/coverage.html no seu navegador
 ```
 
 ## Licença

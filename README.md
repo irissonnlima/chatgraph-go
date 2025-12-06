@@ -15,7 +15,8 @@ English | [Português](README.pt-br.md)
 - 🔁 **Loop Protection** - Prevents infinite redirect loops automatically
 - 📦 **Generic Observations** - Store custom session data with type safety
 - 🔌 **Pluggable Adapters** - RabbitMQ input, REST API output (easily extensible)
-- 📄 **File Support** - Upload and send files with SHA256 deduplication
+- 📄 **File Support** - Upload, send, and download files with SHA256 deduplication
+- ✅ **Well Tested** - Comprehensive test coverage for core packages
 
 ## Installation
 
@@ -272,6 +273,19 @@ file, err := ctx.LoadFileBytes("greeting.txt", content)
 
 Files are deduplicated using SHA256 hash - uploading the same content twice returns the cached file.
 
+**Download file content:**
+
+```go
+// Download file bytes from URL
+if !ctx.Message.File.IsEmpty() {
+    bytes, err := ctx.Message.File.Bytes()
+    if err == nil {
+        // Process the file bytes
+        fmt.Printf("Downloaded %d bytes\n", len(bytes))
+    }
+}
+```
+
 ## Configuration
 
 ### Default Options
@@ -329,6 +343,18 @@ chatgraph-go/
 │   ├── ports/adapters/  # Adapter interfaces
 │   └── service/         # Application service
 └── examples/            # Usage examples
+```
+
+## Testing
+
+Run tests with coverage:
+
+```bash
+go test ./... -cover
+
+# Or use the coverage script for HTML report
+./coverage.sh
+# Open coverage/coverage.html in your browser
 ```
 
 ## License
