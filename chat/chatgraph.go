@@ -15,6 +15,8 @@
 package chat
 
 import (
+	"testing"
+
 	input_queue "github.com/irissonnlima/chatgraph-go/adapters/input/queue"
 	output_router_api "github.com/irissonnlima/chatgraph-go/adapters/output/router_api"
 	route_return "github.com/irissonnlima/chatgraph-go/core/domain"
@@ -47,6 +49,24 @@ type App[Obs any] = service.ChatbotApp[Obs]
 // Engine handles route registration and execution logic without I/O.
 // It is designed to be testable in isolation without requiring external dependencies.
 type Engine[Obs any] = service.Engine[Obs]
+
+// EngineTester is a test helper for validating chatbot handler executions.
+type EngineTester[Obs any] = service.EngineTester[Obs]
+
+// ExpectedAction represents an expected action during handler execution.
+type ExpectedAction = service.ExpectedAction
+
+// ActionExecType represents the type of action executed by a handler.
+type ActionExecType = service.ActionExecType
+
+// Action execution type constants for use with EngineTester.
+const (
+	ExecSendMessage    = service.ExecSendMessage
+	ExecSetObservation = service.ExecSetObservation
+	ExecSetRoute       = service.ExecSetRoute
+	ExecGetFile        = service.ExecGetFile
+	ExecUploadFile     = service.ExecUploadFile
+)
 
 // ============================================================================
 // Type Aliases - Actions
@@ -180,4 +200,10 @@ func NewRoute(fullPath string, separator rune) Route {
 // The engine handles route registration and can be used both for testing and production.
 func NewEngine[Obs any](options ...RouterHandlerOptions) *Engine[Obs] {
 	return service.NewEngine[Obs](options...)
+}
+
+// NewEngineTester creates a new EngineTester for testing chatbot handlers.
+// Use this to validate handler actions and return values.
+func NewEngineTester[Obs any](t *testing.T, engine *Engine[Obs]) *EngineTester[Obs] {
+	return service.NewEngineTester(t, engine)
 }
