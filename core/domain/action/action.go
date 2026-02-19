@@ -35,7 +35,7 @@ func (RedirectResponse) IsRouteReturn() {}
 // TransferToMenu indicates a transfer of the conversation to a different menu.
 type TransferToMenu struct {
 	// MenuID is the identifier of the menu to transfer to.
-	MenuID int
+	MenuID string
 	Route  string
 }
 
