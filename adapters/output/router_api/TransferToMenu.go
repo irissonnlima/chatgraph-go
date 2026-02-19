@@ -1,11 +1,48 @@
 package output_router_api
 
 import (
+	"encoding/json"
+
+	dto_user "github.com/irissonnlima/chatgraph-go/adapters/dto/user"
 	d_action "github.com/irissonnlima/chatgraph-go/core/domain/action"
 	d_message "github.com/irissonnlima/chatgraph-go/core/domain/message"
 	d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
 )
 
+type Detail struct {
+	Text string `json:"detail"`
+}
+
+type Message struct {
+	TextDetail Detail `json:"text_detail"`
+}
+
+type TransferPayload struct {
+	ChatID  dto_user.ChatID `json:"chat_id"`
+	Menu    string          `json:"menu_id"`
+	Message Message         `json:"message"`
+}
+
 func (r *RouterApi) TransferToMenu(chatID d_user.ChatID, transfer d_action.TransferToMenu, message d_message.Message) error {
-	return nil
+	textMessage := message.EntireText()
+
+	payload := TransferPayload{
+		ChatID: dto_user.ChatID{
+			UserID:    chatID.UserID,
+			CompanyID: chatID.CompanyID,
+		},
+		Menu: transfer.MenuID,
+		Message: Message{
+			TextDetail: Detail{
+				Text: textMessage,
+			},
+		},
+	}
+
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	return r.post("/v1/actions/messages/transfer_to_menu", jsonPayload)
 }

@@ -42,28 +42,32 @@ func main() {
     // Create adapters
     rabbit := chat.NewRabbitMQ[Obs]("user", "pass", "host", "vhost", "queue")
     router := chat.NewRouterApi("http://api-url", "user", "pass")
+    engine := chat.NewEngine[Obs]()
     
     // Create app
-    app := chat.NewApp(rabbit, router)
+    app := chat.NewApp(engine, rabbit, router)
     
     // Register routes
-    app.RegisterRoute("start", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+    engine.RegisterRoute("start", func(ctx *chat.Context[Obs]) chat.RouteReturn {
         ctx.SendTextMessage("Hello! Type something:")
-        return ctx.NextRoute("echo")
+        r := ctx.NextRoute("echo")
+        return &r
     })
     
-    app.RegisterRoute("echo", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+    engine.RegisterRoute("echo", func(ctx *chat.Context[Obs]) chat.RouteReturn {
         ctx.SendTextMessage("You said: " + ctx.Message.EntireText())
-        return ctx.NextRoute("start")
+        r := ctx.NextRoute("start")
+        return &r
     })
     
     // Required: timeout and loop handlers
-    app.RegisterRoute("timeout_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+    engine.RegisterRoute("timeout_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
         ctx.SendTextMessage("Session timed out!")
-        return ctx.NextRoute("start")
+        r := ctx.NextRoute("start")
+        return &r
     })
     
-    app.RegisterRoute("loop_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
+    engine.RegisterRoute("loop_route", func(ctx *chat.Context[Obs]) chat.RouteReturn {
         return &chat.RedirectResponse{TargetRoute: "start"}
     })
     
