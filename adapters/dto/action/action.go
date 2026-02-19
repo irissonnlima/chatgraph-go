@@ -23,6 +23,6 @@ type RedirectResponse struct {
 // TransferToMenu indicates a transfer of the conversation to a different menu.
 type TransferToMenu struct {
 	// MenuID is the identifier of the menu to transfer to.
-	MenuID int    `json:"menu_id"`
+	MenuID string `json:"menu_id"`
 	Route  string `json:"route"`
 }
