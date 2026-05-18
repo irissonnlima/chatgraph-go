@@ -18,13 +18,17 @@ type Message struct {
 }
 
 type TransferPayload struct {
-	ChatID  dto_user.ChatID `json:"chat_id"`
-	Menu    string          `json:"menu_id"`
-	Message Message         `json:"message"`
+	ChatID      dto_user.ChatID `json:"chat_id"`
+	Menu        string          `json:"menu_id"`
+	Message     Message         `json:"message"`
+	UserMessage string          `json:"user_message,omitempty"`
 }
 
 func (r *RouterApi) TransferToMenu(chatID d_user.ChatID, transfer d_action.TransferToMenu, message d_message.Message) error {
 	textMessage := message.EntireText()
+	if transfer.UserMessage != "" {
+		textMessage = transfer.UserMessage
+	}
 
 	payload := TransferPayload{
 		ChatID: dto_user.ChatID{

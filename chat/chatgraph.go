@@ -23,6 +23,8 @@ import (
 	d_action "github.com/irissonnlima/chatgraph-go/core/domain/action"
 	d_context "github.com/irissonnlima/chatgraph-go/core/domain/context"
 	d_file "github.com/irissonnlima/chatgraph-go/core/domain/file"
+	d_guard "github.com/irissonnlima/chatgraph-go/core/domain/guard"
+	d_logger "github.com/irissonnlima/chatgraph-go/core/domain/logger"
 	d_message "github.com/irissonnlima/chatgraph-go/core/domain/message"
 	d_route "github.com/irissonnlima/chatgraph-go/core/domain/route"
 	d_router "github.com/irissonnlima/chatgraph-go/core/domain/router"
@@ -129,6 +131,51 @@ type ChatID = d_user.ChatID
 // Menu represents the current menu context.
 type Menu = d_user.Menu
 
+// AuthLevel represents the user's authorization level.
+type AuthLevel = d_user.AuthLevel
+
+// AuthLevel constants.
+const (
+	AuthBlocked = d_user.AuthBlocked
+	AuthUnknown = d_user.AuthUnknown
+	AuthRead    = d_user.AuthRead
+	AuthWrite   = d_user.AuthWrite
+)
+
+// UserIdentity represents the authenticated identity of the user.
+type UserIdentity = d_user.UserIdentity
+
+// UserInternal represents internal HR data for the user.
+type UserInternal = d_user.UserInternal
+
+// ============================================================================
+// Type Aliases - Guard Types
+// ============================================================================
+
+// GuardFunc is the function signature for route authorization guards.
+type GuardFunc[Obs any] = d_guard.GuardFunc[Obs]
+
+// ============================================================================
+// Type Aliases - Logger Types
+// ============================================================================
+
+// UserLogger provides a structured logger scoped to a specific user.
+type UserLogger = d_logger.UserLogger
+
+// UserLoggerManager manages per-user loggers with file-based logging.
+type UserLoggerManager = d_logger.UserLoggerManager
+
+// LogLevel represents the severity of a log message.
+type LogLevel = d_logger.LogLevel
+
+// Log level constants.
+const (
+	LevelDebug   = d_logger.LevelDebug
+	LevelInfo    = d_logger.LevelInfo
+	LevelWarning = d_logger.LevelWarning
+	LevelError   = d_logger.LevelError
+)
+
 // ============================================================================
 // Type Aliases - Route Types
 // ============================================================================
@@ -206,4 +253,35 @@ func NewEngine[Obs any](options ...RouterHandlerOptions) *Engine[Obs] {
 // Use this to validate handler actions and return values.
 func NewEngineTester[Obs any](t *testing.T, engine *Engine[Obs]) *EngineTester[Obs] {
 	return service.NewEngineTester(t, engine)
+}
+
+// ============================================================================
+// Constructors - Guard
+// ============================================================================
+
+// DefaultGuard returns a guard function that checks user.Identity.AuthLevel
+// against the route's required level. Denied users are redirected to deniedRoute.
+func DefaultGuard[Obs any](deniedRoute string) GuardFunc[Obs] {
+	return d_guard.DefaultGuard[Obs](deniedRoute)
+}
+
+// InternalGuard returns a guard function that checks whether the user has
+// internal HR data. Denied users are redirected to deniedRoute.
+func InternalGuard[Obs any](deniedRoute string) GuardFunc[Obs] {
+	return d_guard.InternalGuard[Obs](deniedRoute)
+}
+
+// ============================================================================
+// Constructors - Logger
+// ============================================================================
+
+// NewUserLoggerManager creates a new per-user logger manager.
+// Log files are stored in the specified directory.
+func NewUserLoggerManager(dir string, level LogLevel) *UserLoggerManager {
+	return d_logger.NewUserLoggerManager(dir, level)
+}
+
+// ParseLogLevel converts a string (e.g. "DEBUG", "INFO") to a LogLevel.
+func ParseLogLevel(s string) LogLevel {
+	return d_logger.ParseLogLevel(s)
 }

@@ -36,7 +36,10 @@ func (RedirectResponse) IsRouteReturn() {}
 type TransferToMenu struct {
 	// MenuID is the identifier of the menu to transfer to.
 	MenuID string
-	Route  string
+	// Route is the initial route to set after the transfer.
+	Route string
+	// UserMessage is a message to be sent automatically after the transfer.
+	UserMessage string
 }
 
 // IsRouteReturn implements the RouteReturn interface.

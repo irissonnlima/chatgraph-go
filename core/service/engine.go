@@ -11,6 +11,8 @@ import (
 	route_return "github.com/irissonnlima/chatgraph-go/core/domain"
 	d_action "github.com/irissonnlima/chatgraph-go/core/domain/action"
 	d_context "github.com/irissonnlima/chatgraph-go/core/domain/context"
+	d_guard "github.com/irissonnlima/chatgraph-go/core/domain/guard"
+	d_logger "github.com/irissonnlima/chatgraph-go/core/domain/logger"
 	d_message "github.com/irissonnlima/chatgraph-go/core/domain/message"
 	d_router "github.com/irissonnlima/chatgraph-go/core/domain/router"
 	d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
@@ -26,6 +28,10 @@ type Engine[Obs any] struct {
 	defaultOptions d_router.RouterHandlerOptions
 	// routeTriggers holds the route triggers configuration.
 	routeTriggers []d_router.RouteTrigger
+	// guard is the authorization guard function. If nil, no guard check is performed.
+	guard d_guard.GuardFunc[Obs]
+	// loggerManager manages per-user loggers. If nil, no per-user logging is available.
+	loggerManager *d_logger.UserLoggerManager
 }
 
 // NewEngine creates a new Engine instance with optional default options.
@@ -80,6 +86,18 @@ func (e *Engine[Obs]) RegisterRoute(
 // Triggers are regex patterns that, when matched, redirect to a specific route.
 func (e *Engine[Obs]) RegisterTrigger(trigger d_router.RouteTrigger) {
 	e.routeTriggers = append(e.routeTriggers, trigger)
+}
+
+// SetGuard sets the authorization guard function for the engine.
+// The guard is called before executing any route handler that has a Protected option set.
+func (e *Engine[Obs]) SetGuard(guard d_guard.GuardFunc[Obs]) {
+	e.guard = guard
+}
+
+// SetLoggerManager sets the per-user logger manager for the engine.
+// When set, each ChatContext will have a Logger scoped to the user.
+func (e *Engine[Obs]) SetLoggerManager(manager *d_logger.UserLoggerManager) {
+	e.loggerManager = manager
 }
 
 // applyTriggers checks if the message matches any trigger regex.
@@ -137,6 +155,19 @@ func (e *Engine[Obs]) Execute(
 		return nil, fmt.Errorf("route not found: %s", route.Current())
 	}
 
+	// Check guard authorization
+	if routeFunc.HandlerOptions.Protected != nil && e.guard != nil {
+		protected := routeFunc.HandlerOptions.Protected
+		guardResult := e.guard(userState, protected.AuthLevel)
+		if guardResult != nil {
+			return guardResult, nil
+		}
+		// Check internal requirement
+		if protected.Internal && userState.User.Internal == nil {
+			return &d_action.RedirectResponse{TargetRoute: protected.Route}, nil
+		}
+	}
+
 	// Create context with router
 	ctx, cancel := d_context.NewChatContext(
 		userState,
@@ -145,6 +176,11 @@ func (e *Engine[Obs]) Execute(
 		routeFunc.HandlerOptions.Timeout.Duration,
 	)
 	defer cancel()
+
+	// Attach per-user logger if available
+	if e.loggerManager != nil {
+		ctx.Logger = e.loggerManager.GetLogger(userState.ChatID.UserID, userState.ChatID.CompanyID)
+	}
 
 	// Channel to receive the result
 	resultChan := make(chan route_return.RouteReturn, 1)

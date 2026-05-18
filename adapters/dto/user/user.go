@@ -3,10 +3,11 @@
 package dto_user
 
 import (
-	d_route "github.com/irissonnlima/chatgraph-go/core/domain/route"
-	d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
 	"encoding/json"
 	"log"
+
+	d_route "github.com/irissonnlima/chatgraph-go/core/domain/route"
+	d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
 )
 
 // User represents the basic user information.
@@ -22,16 +23,60 @@ type User struct {
 	Phone string `json:"phone"`
 	// Email is the user's email address.
 	Email string `json:"email"`
+	// Identity holds the user's authentication identity data.
+	Identity *UserIdentity `json:"identity,omitempty"`
+	// Internal holds internal HR data. Nil if user has no internal relationship.
+	Internal *UserInternal `json:"internal,omitempty"`
+}
+
+// UserIdentity represents the authenticated identity of the user (DTO).
+type UserIdentity struct {
+	AuthLevel  string `json:"auth_level"`
+	CPF        string `json:"cpf"`
+	Active     bool   `json:"active"`
+	AuthStatus string `json:"auth_status"`
+	DeviceID   string `json:"device_id"`
+}
+
+// UserInternal represents internal HR data (DTO).
+type UserInternal struct {
+	Matricula    string `json:"matricula"`
+	Cargo        string `json:"cargo"`
+	Filial       string `json:"filial"`
+	Empresa      string `json:"empresa"`
+	DataAdmissao string `json:"data_admissao"`
 }
 
 func (u User) ToDomain() d_user.User {
-	return d_user.User{
+	user := d_user.User{
 		CPF:               u.CPF,
 		AuthorizationCode: u.AuthorizationCode,
 		Name:              u.Name,
 		Phone:             u.Phone,
 		Email:             u.Email,
 	}
+
+	if u.Identity != nil {
+		user.Identity = d_user.UserIdentity{
+			AuthLevel:  d_user.ParseAuthLevel(u.Identity.AuthLevel),
+			CPF:        u.Identity.CPF,
+			Active:     u.Identity.Active,
+			AuthStatus: u.Identity.AuthStatus,
+			DeviceID:   u.Identity.DeviceID,
+		}
+	}
+
+	if u.Internal != nil {
+		user.Internal = &d_user.UserInternal{
+			Matricula:    u.Internal.Matricula,
+			Cargo:        u.Internal.Cargo,
+			Filial:       u.Internal.Filial,
+			Empresa:      u.Internal.Empresa,
+			DataAdmissao: u.Internal.DataAdmissao,
+		}
+	}
+
+	return user
 }
 
 // UserState represents the complete state of a user's chat session.

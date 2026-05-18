@@ -17,7 +17,7 @@ func TestRedirectResponse_IsRouteReturn(t *testing.T) {
 }
 
 func TestTransferToMenu_IsRouteReturn(t *testing.T) {
-	transfer := TransferToMenu{MenuID: 1, Route: "menu"}
+	transfer := TransferToMenu{MenuID: "1", Route: "menu"}
 	// Should not panic - just verify it implements the interface
 	transfer.IsRouteReturn()
 }
@@ -57,12 +57,15 @@ func TestRedirectResponse_Fields(t *testing.T) {
 }
 
 func TestTransferToMenu_Fields(t *testing.T) {
-	transfer := TransferToMenu{MenuID: 10, Route: "support"}
+	transfer := TransferToMenu{MenuID: "10", Route: "support", UserMessage: "hello"}
 
-	if transfer.MenuID != 10 {
+	if transfer.MenuID != "10" {
 		t.Errorf("TransferToMenu.MenuID = %v, want 10", transfer.MenuID)
 	}
 	if transfer.Route != "support" {
 		t.Errorf("TransferToMenu.Route = %v, want support", transfer.Route)
+	}
+	if transfer.UserMessage != "hello" {
+		t.Errorf("TransferToMenu.UserMessage = %v, want hello", transfer.UserMessage)
 	}
 }

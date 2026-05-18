@@ -6,6 +6,7 @@ import (
 	"context"
 	"time"
 
+	d_logger "github.com/irissonnlima/chatgraph-go/core/domain/logger"
 	d_message "github.com/irissonnlima/chatgraph-go/core/domain/message"
 	d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
 	adapter_output "github.com/irissonnlima/chatgraph-go/core/ports/adapters/output"
@@ -22,6 +23,8 @@ type ChatContext[Obs any] struct {
 	UserState d_user.UserState[Obs]
 	// Message is the incoming message being processed.
 	Message d_message.Message
+	// Logger is a per-user logger scoped to (user_id, company_id).
+	Logger *d_logger.UserLogger
 	// router provides messaging and session management capabilities.
 	router adapter_output.IBotExecutor
 }
@@ -43,6 +46,28 @@ func NewChatContext[Obs any](
 		Context:   ctx,
 		UserState: userState,
 		Message:   message,
+		router:    router,
+	}
+
+	return ctxChatbot, cancel
+}
+
+// NewChatContextWithLogger creates a new ChatContext with a per-user logger.
+func NewChatContextWithLogger[Obs any](
+	userState d_user.UserState[Obs],
+	message d_message.Message,
+	router adapter_output.IBotExecutor,
+	timeout time.Duration,
+	logger *d_logger.UserLogger,
+) (ChatContext[Obs], context.CancelFunc) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+
+	ctxChatbot := ChatContext[Obs]{
+		Context:   ctx,
+		UserState: userState,
+		Message:   message,
+		Logger:    logger,
 		router:    router,
 	}
 

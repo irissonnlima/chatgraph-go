@@ -3,8 +3,9 @@
 package d_user
 
 import (
-	d_route "github.com/irissonnlima/chatgraph-go/core/domain/route"
 	"encoding/json"
+
+	d_route "github.com/irissonnlima/chatgraph-go/core/domain/route"
 )
 
 // User represents the basic user information.
@@ -20,11 +21,15 @@ type User struct {
 	Phone string
 	// Email is the user's email address.
 	Email string
+	// Identity holds the user's authentication identity data.
+	Identity UserIdentity
+	// Internal holds internal HR data. Nil if user has no internal relationship.
+	Internal *UserInternal
 }
 
-// IsEmpty returns true if the User is a zero-value struct.
+// IsEmpty returns true if the User has no identifying information.
 func (u User) IsEmpty() bool {
-	return u == (User{})
+	return u.CPF == "" && u.AuthorizationCode == "" && u.Name == "" && u.Phone == "" && u.Email == ""
 }
 
 // UserState represents the complete state of a user's chat session.

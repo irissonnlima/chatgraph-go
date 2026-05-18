@@ -2,6 +2,8 @@ package d_router
 
 import (
 	"time"
+
+	d_user "github.com/irissonnlima/chatgraph-go/core/domain/user"
 )
 
 // Default values for route handler options.
@@ -25,6 +27,11 @@ var (
 type ProtectedRouteOps struct {
 	// Route is the route name to redirect to if the user is not allowed access.
 	Route string
+	// AuthLevel is the minimum authorization level required to access this route.
+	// If not set (zero value), the guard will use its own logic.
+	AuthLevel d_user.AuthLevel
+	// Internal requires the user to have internal HR data (employee relationship).
+	Internal bool
 }
 
 // TimeoutRouteOps configures timeout behavior for route handler execution.

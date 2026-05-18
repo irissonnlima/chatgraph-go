@@ -28,3 +28,5 @@ go.work.sum
 coverage/
 coverage.out
 coverage.html
+
+gaps-python-to-go.md

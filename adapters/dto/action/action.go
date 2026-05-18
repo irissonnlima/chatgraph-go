@@ -25,4 +25,6 @@ type TransferToMenu struct {
 	// MenuID is the identifier of the menu to transfer to.
 	MenuID string `json:"menu_id"`
 	Route  string `json:"route"`
+	// UserMessage is a message to be sent automatically after the transfer.
+	UserMessage string `json:"user_message,omitempty"`
 }
